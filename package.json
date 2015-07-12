@@ -5,7 +5,8 @@
   "repository": "https://github.com/DatenMetzgerX/webpack-angular-translate",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --watch"
+    "test": "mocha",
+    "start": "mocha --watch"
   },
   "author": "Micha Reiser <micha@famreiser.ch>",
   "license": "MIT",
