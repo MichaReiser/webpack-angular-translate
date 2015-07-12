@@ -79,6 +79,7 @@ AngularTranslatePlugin.prototype.apply = function (compiler) {
     });
 
     compiler.parser.plugin('call i18n.registerTranslation', self.handleRegisterTranslation.bind(self));
+    compiler.parser.plugin('call i18n.registerTranslations', self.handleRegisterTranslations.bind(self));
 
     // this only works if Parser.js walkCallExpression is modified to trigger 'evaluate CallExpression').
     // This approach would have the advantage, that the arguments could be
@@ -159,6 +160,38 @@ AngularTranslatePlugin.prototype.handleRegisterTranslation = function (call) {
         this.compilation.errors.push(new Error("Invalid call to i18n.registerTranslation (" + e.message + ", " + resource + ":" + call.loc.start.line + ")."));
     }
 };
+AngularTranslatePlugin.prototype.handleRegisterTranslations = function (call) {
+    var self = this;
+    var resource = this.compiler.parser.state.current.request;
+    if (call.arguments.length === 0 || call.arguments[0].type !== 'ObjectExpression') {
+        this.compilation.errors.push(new Error("A call to i18n.registerTranslations({}) requires at least one argument that is an object(" + resource + ":" + call.loc.start.line + ")"));
+        return;
+    }
+
+    try {
+        var translations = call.arguments[0].properties.map(function (property) {
+            var translationId = self.compiler.parser.evaluateExpression(property.key);
+            var defaultText = self.compiler.parser.evaluateExpression(property.value);
+
+            if (!defaultText.isString()) {
+                throw new Error("The default text (value) must be a string literal (" + resource + ":" + property.value.loc.start.line + ").");
+            }
+            return new Translation(translationId.string, defaultText.string, resource);
+        });
+
+        translations.forEach(this.registerTranslation.bind(this));
+
+        // Replace the registerTranslation expression with a pseudo expression that is removed by uglify js
+        var dep = new ConstDependency('(0)', call.range);
+        dep.loc = call.loc;
+        this.compiler.parser.state.current.addDependency(dep);
+        return true;
+
+    } catch (e) {
+        this.compilation.errors.push(e);
+    }
+};
+
 
 AngularTranslatePlugin.prototype.extractArgumentValue = function(argument) {
     var evaluated = this.compiler.parser.evaluateExpression(argument);

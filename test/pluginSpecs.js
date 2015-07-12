@@ -171,7 +171,7 @@ describe("JS", function () {
     });
 });
 
-describe("Register Translation", function () {
+describe("Register translation", function () {
     it("register translation", function (done) {
         translationsTest('registerTranslation.js', done, function (translations, stats) {
             assert.lengthOf(stats.compilation.errors, 0);
@@ -190,6 +190,29 @@ describe("Register Translation", function () {
             assert.match(stats.compilation.errors[0].message, /^A call to i18n\.registerTranslation\(id, defaultText\) requires at least one argument \(.+registerInvalidTranslation\.js:2\)/);
             assert.match(stats.compilation.errors[1].message, /^Invalid call to i18n\.registerTranslation \(only string arguments are supported, could not evaluate expression, .+registerInvalidTranslation\.js:4\)\./);
 
+            assert.deepEqual(translations, {});
+        });
+    });
+});
+
+describe("Register translations", function () {
+    it("register translations", function (done) {
+        translationsTest('registerTranslations.js', done, function (translations, stats) {
+            assert.lengthOf(stats.compilation.errors, 0);
+
+            assert.deepEqual(translations, {
+                "Login": "Anmelden",
+                "Logout": "Abmelden"
+            });
+        });
+    });
+
+    it("warns about invalid translation registrations", function (done) {
+        translationsTest('registerInvalidTranslations.js', done, function (translations, stats) {
+            assert.lengthOf(stats.compilation.errors, 2);
+
+            assert.match(stats.compilation.errors[0].message, /^A call to i18n\.registerTranslations\(\{}\) requires at least one argument that is an object\(.+registerInvalidTranslations\.js:1\)$/);
+            assert.match(stats.compilation.errors[1].message, /^The default text \(value\) must be a string literal \(.+registerInvalidTranslations\.js:6\)\.$/);
             assert.deepEqual(translations, {});
         });
     });
