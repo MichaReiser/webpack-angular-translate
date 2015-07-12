@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+</head>
+<body>
+
+	<a translate translate-attr-title="attribute-id">Content</a>
+
+	<!--
+		this case is not supported by angular-translate itself, it's an extension by this plugin.
+		 It allows to define a default text for an attribute translation what is not possible with angular-translate itself.
+	-->
+	<a translate translate-attr-title="attribute-default-id" translate-default-attr-title="Default text for attribute title">Content</a>
+
+	<!--
+	 	FIXME: We need to test what happens if we define a translate-attr. Will the content be translated too or not?
+	-->
+</body>
+</html>

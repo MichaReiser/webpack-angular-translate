@@ -32,10 +32,10 @@ Translation.prototype.merge = function (other) {
     }
 
     return new Translation(this.id, this.defaultText || other.defaultText, resources);
-}
+};
 
 Translation.prototype.toString = function () {
     return "Translation{ id: " + this.id + ", defaultText: " + this.defaultText + ", resources: " + this.resources + "}";
-}
+};
 
 module.exports = Translation;
