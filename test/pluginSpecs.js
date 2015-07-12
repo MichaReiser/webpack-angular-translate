@@ -171,10 +171,26 @@ describe("JS", function () {
     });
 });
 
-describe("Register Translations", function () {
-    it("register translations", function (done) {
-        translationsTest('registerTranslations', done, function (translations, stats) {
-            assert.propertyVal(translations, 'Logout', 'Abmelden');
+describe("Register Translation", function () {
+    it("register translation", function (done) {
+        translationsTest('registerTranslation.js', done, function (translations, stats) {
+            assert.lengthOf(stats.compilation.errors, 0);
+
+            assert.deepEqual(translations, {
+                "NEW_USER": "New user",
+                "EDIT_USER": "Edit user"
+            });
+        });
+    });
+
+    it("register translation with invalid arguments", function (done) {
+        translationsTest('registerInvalidTranslation.js', done, function (translations, stats) {
+            assert.lengthOf(stats.compilation.errors, 2);
+
+            assert.match(stats.compilation.errors[0].message, /^A call to i18n\.registerTranslation\(id, defaultText\) requires at least one argument \(.+registerInvalidTranslation\.js:2\)/);
+            assert.match(stats.compilation.errors[1].message, /^Invalid call to i18n\.registerTranslation \(only string arguments are supported, could not evaluate expression, .+registerInvalidTranslation\.js:4\)\./);
+
+            assert.deepEqual(translations, {});
         });
     });
 });

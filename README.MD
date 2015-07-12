@@ -66,9 +66,42 @@ that the `$translate` service is always called `$translate`. `$translate.instant
  
  
 ## Register dynamic translations
-If a dynamic translation is used, then the translation needs to be registered. To do so, the `i18n.registerTranslations({ translationId: defaultText } | translationId, defaultText)` function
-can be used. The registered translations are merged into the outputted json file. The function calls will be repalced by `(0);`. If 
+If a dynamic translation is used, then the translation needs to be registered. To do so, the `i18n.registerTranslations({ translationId: defaultText })` function
+can be used. This might be helpful if the translation id is dynamically composed from a value of a domain object but the set of all possible combinations is known. 
+The registered translations are merged into the outputted json file. The function calls will be replaced by `(0);`. If 
 UglifyJS is used for minification, then those calls will be removed entirely. 
+
+An alternative is `i18n.registerTranslation(translationId, defaultText?)`. This function is intended to be used when the 
+translation id's are known in the javascript code but not known in the html file. Following an example where the title 
+is dynamiclly set depending if it is a new item or an existing one:
+
+```html
+<h2 translate suppress-dynamic-translation-error>{{editCtrl.title}}</h2>
+```
+
+The controller defines the id of the translation to use:
+
+ ```js
+ function EditController(user) {
+ 	if (user.isNew()) {
+    	this.title = i18n.registerTranslation("NEW_USER", "New user");
+    } else {
+    	this.title = i18n.registerTranslation("EDIT_USER", "Edit user");
+	}
+}
+      
+var editState = {
+	name: "edit",
+    url: "/{id:int}/edit",
+    template: require("./registerTranslation.html"),
+    controller: EditController,
+    controllerAs: "editCtrl"
+};
+ ```
+ 
+ The call to `i18n.registerTranslation` registers the translation id with the default text (optional). The result of the 
+ function is the id of the translation to use. This makes it possible to register translations in place. Calls to `i18n.registerTranslation` 
+ compile to the passed in translation id (the function is not evaluated at runtime).
 
 ## Open issues
 * Extend documentation
@@ -76,3 +109,4 @@ UglifyJS is used for minification, then those calls will be removed entirely.
 * Make output file name configurable
 * support require calls in i18n.registerTranslations
 * Emit warnings if $translate.instant or the filter are used
+* Reenable support for registerTranslations
