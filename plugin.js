@@ -78,13 +78,7 @@ AngularTranslatePlugin.prototype.apply = function (compiler) {
         });
     });
 
-    compiler.parser.plugin('call i18n.registerTranslations', self.handleRegisterTranslations.bind(self));
-    /*compiler.parser.plugin('expression i18n.registerTranslations', function (expr) {
-        var dep = new ConstDependency("(0)", expr.range);
-        dep.loc = expr.loc;
-        this.state.current.addDependency(dep);
-        return true;
-    });*/
+    compiler.parser.plugin('call i18n.registerTranslation', self.handleRegisterTranslation.bind(self));
 
     // this only works if Parser.js walkCallExpression is modified to trigger 'evaluate CallExpression').
     // This approach would have the advantage, that the arguments could be
@@ -138,36 +132,52 @@ AngularTranslatePlugin.prototype.handleCallExpression = function (expression, re
     translations.forEach(this.registerTranslation.bind(this));
 };
 
-AngularTranslatePlugin.prototype.handleRegisterTranslations = function (call) {
-    var translations;
-
-    if (call.arguments[0].type === 'ObjectExpression') {
-        translations = call.arguments[0].properties.map(function (property) {
-            return new Translation(property.key.value, property.value.value);
-        });
-
-    } else if (call.arguments[0].type === 'Literal') {
-        translations = [ new Translation(call.arguments[0].value, call.arguments[1].value) ];
+AngularTranslatePlugin.prototype.handleRegisterTranslation = function (call) {
+    var resource = this.compiler.parser.state.current.request;
+    if (call.arguments.length === 0) {
+        this.compilation.errors.push(new Error("A call to i18n.registerTranslation(id, defaultText) requires at least one argument (" + resource + ":" + call.loc.start.line + ")"));
+        return;
     }
 
-    translations.forEach(this.registerTranslation.bind(this));
+    try {
+        var translationId = evaluateStringArgument(call.arguments[0], this.compiler),
+            defaultText;
 
-    // Replace the registerTranslations expression with a pseudo expression
-    // This expression will be removed by UglifyJS!
-    var dep = new ConstDependency("(0)", call.range);
-    dep.loc = call.loc;
-    this.compiler.parser.state.current.addDependency(dep);
-    return true;
+        if (call.arguments.length > 1) {
+            defaultText = evaluateStringArgument(call.arguments[1], this.compiler);
+        }
+        var translation = new Translation(translationId, defaultText, resource);
+
+        this.registerTranslation(translation);
+
+        // Replace the registerTranslation expression with the translation id
+        var dep = new ConstDependency('"' + translation.id + '"', call.range);
+        dep.loc = call.loc;
+        this.compiler.parser.state.current.addDependency(dep);
+        return true;
+    } catch (e) {
+        this.compilation.errors.push(new Error("Invalid call to i18n.registerTranslation (" + e.message + ", " + resource + ":" + call.loc.start.line + ")."));
+    }
 };
 
 AngularTranslatePlugin.prototype.extractArgumentValue = function(argument) {
-    if (argument.type === 'Literal') {
-        return argument.value;
+    var evaluated = this.compiler.parser.evaluateExpression(argument);
+    if (evaluated.isString()) {
+        return evaluated.string;
     }
 
-    if (argument.type === 'ArrayExpression') {
-        return argument.elements.map(this.extractArgumentValue.bind(this));
+    if (evaluated.isArray()) {
+        return evaluated.items.map(function (item) { return item.string; });
     }
 };
+
+function evaluateStringArgument(argument, compiler) {
+    var evaluated = compiler.parser.evaluateExpression(argument);
+    if (evaluated.isString()) {
+        return evaluated.string;
+    }
+
+    throw new Error("only string arguments are supported, could not evaluate expression");
+}
 
 module.exports = AngularTranslatePlugin;

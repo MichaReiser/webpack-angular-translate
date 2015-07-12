@@ -1,1 +1,0 @@
-{"Login":"Anmelden","Username":"Benutzername","Logout":"Abmelden"}
