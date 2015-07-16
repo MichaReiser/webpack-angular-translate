@@ -181,6 +181,12 @@ describe("filter", function () {
             assert.lengthOf(stats.compilation.errors, 0);
         });
     });
+
+    it("can parse an invalid html file", function (done) {
+        translationsTest('invalid-html.html', done, function (translations) {
+            assert.propertyVal(translations, 'Result', 'Result');
+        });
+    });
 });
 
 describe("JS", function () {
