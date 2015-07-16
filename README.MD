@@ -54,11 +54,21 @@ The directive is supported for static translations. Dynamic translations are not
 <div translate translate-attr-title="TITLE-ID" translate-default-attr-title="Default for title attr" />
 ```
 
-The plugin emits an error if a dynamic expression is used in the directive. To suppress the error, use the `suppress-dynamic-translate-error` attribute
-on the element with the dynamic translation. This attribute is removed from the resulting html code.
  
 ### Filter
-The filter is not supported. No errors are emitted if the filter is used.
+Filters in Angular-Expression statements are supported when the value is a string and no other filter is applied before the `translate` filter. 
+The following examples are supported:
+
+```html
+<h1 title="{{ 'My title' | translate }}"></h1>
+<h2>{{ 'My long translation' | translate | limitTo:20 }}</h2>
+
+<span>{{ "4" | translate }} {{ "x" | translate }}</span>
+```
+
+Filters in `ng-bind` and other attributes is currently not supported. In the most scenarios `ng-bind` can be replaced 
+with the `translate` directive or a filter can be applied directly.
+
 
 ### Service
 The `$translate` service is supported for literals only. No dynamic translations are supported. It's required
@@ -102,6 +112,9 @@ var editState = {
  The call to `i18n.registerTranslation` registers the translation id with the default text (optional). The result of the 
  function is the id of the translation to use. This makes it possible to register translations in place. Calls to `i18n.registerTranslation` 
  compile to the passed in translation id (the function is not evaluated at runtime).
+ 
+ The `suppress-dynamic-translation-error` attribute can be defined on any element and will suppress any errors from the plugin
+ for the attributed element and all it's child elements. This attribute is removed for non debuging builds.
 
 ## Open issues
 * Extend documentation

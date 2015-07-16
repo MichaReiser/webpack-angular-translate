@@ -61,7 +61,7 @@ function compile(options, callback) {
     compiler.run(callback);
 }
 
-describe("HTML", function () {
+describe("directive", function () {
     "use strict";
 
     it("extracts the translation id if translate is used as attribute", function (done) {
@@ -111,7 +111,7 @@ describe("HTML", function () {
             assert.lengthOf(stats.compilation.errors, 1, 'an error should have been emitted for the used angular expression as attribute id');
 
             var error = stats.compilation.errors[0];
-            assert.match(error.message, /The translation Translation\{ id: \{\{editCtrl\.title}}, defaultText: undefined, resources: .+} uses an angular expression as translation id or as default text, this is not supported\. To suppress this error attribute the element with suppress-dynamic-translation-error\.$/);
+            assert.include(error.message, "expressions.html uses an angular expression as translation id ({{editCtrl.title}}) or as default text (undefined), this is not supported. To suppress this error attribute the element or any parent attribute with suppress-dynamic-translation-error.");
         });
     });
 
@@ -119,6 +119,72 @@ describe("HTML", function () {
         translationsTest('expressions-suppressed.html', done, function (translations, stats) {
             assert.lengthOf(stats.compilation.errors, 0, "The dynamic translation error is suppressed by the attribute suppress-dynamic-translation-error");
             assert.deepEqual(translations, {});
+        });
+    });
+
+    it("removes the suppress-dynamic-translation-error attribute for non dev build", function (done) {
+        translationsTest('expressions-suppressed.html', done, function (translations, stats) {
+            var output = stats.compilation.assets["bundle.js"].source();
+
+            assert.notInclude(output, 'suppress-dynamic-translation-error');
+        });
+    });
+});
+
+describe("filter", function () {
+
+    it("matches a filter in the body of an element", function (done) {
+        translationsTest('filter-simple.html', done, function (translations) {
+            assert.propertyVal(translations, 'Home', 'Home');
+        });
+    });
+
+    it("matches a filter in an attribute of an element", function (done) {
+        translationsTest('filter-simple.html', done, function (translations) {
+            assert.propertyVal(translations, 'Waterfall', 'Waterfall');
+        });
+    });
+
+    it("matches an expression in the middle of the element text content", function (done) {
+        translationsTest('filter-simple.html', done, function (translations) {
+            assert.propertyVal(translations, 'Top', 'Top');
+        });
+    });
+
+    it("matches multiple expressions in a single text", function (done) {
+        translationsTest('multiple-filters.html', done, function (translations) {
+            assert.propertyVal(translations, 'Result', 'Result');
+            assert.propertyVal(translations, 'of', 'of');
+        });
+    });
+
+    it("emits an error if a dynamic value is used in the translate filter", function (done) {
+        translationsTest('dynamic-filter-expression.html', done, function (translations, stats) {
+            assert.lengthOf(stats.compilation.errors, 1, 'the loader should emit an error message for the dynamic translation');
+
+            assert.include(stats.compilation.errors[0].message, "dynamic-filter-expression.html in the text or an attribute of the element <h1 id='top'>{{ editCtrl.title | translate }}</h1>.");
+            assert.deepEqual({}, translations);
+        });
+    });
+
+    it("emits an error if a filter is used before the translate filter", function (done) {
+        translationsTest('filter-chain.html', done, function (translations, stats) {
+            assert.lengthOf(stats.compilation.errors, 1, 'the loader should emit an error message for filter chains where translate is not the first filter');
+
+            assert.include(stats.compilation.errors[0].message, 'Another filter is used before the translate filter in the element <h1 id=\'top\'>{{ "5.0" | currency | translate }}</h1>');
+            assert.deepEqual({}, translations);
+        });
+    });
+
+    it("suppress dynamic translations errors if element or parent is attribute with suppress-dynamic-translation-error", function (done) {
+        translationsTest('dynamic-filter-expression-suppressed.html', done, function (translations, stats) {
+            assert.lengthOf(stats.compilation.errors, 0);
+        });
+    });
+
+    it("can parse an invalid html file", function (done) {
+        translationsTest('invalid-html.html', done, function (translations) {
+            assert.propertyVal(translations, 'Result', 'Result');
         });
     });
 });
