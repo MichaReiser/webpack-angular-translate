@@ -120,6 +120,4 @@ var editState = {
 * Extend documentation
 * Emit errors when $translate service is used with non literal-arguments
 * Make output file name configurable
-* support require calls in i18n.registerTranslations
-* Emit warnings if $translate.instant or the filter are used
-* Reenable support for registerTranslations
+* Emit warnings if $translate.instant is used

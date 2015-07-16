@@ -20,11 +20,11 @@ function translationsTest(fileName, doneCallback, assertCallback) {
         }
 
         var translations = undefined;
-        if (stats.compilation.assets["translations.js"]) {
-            translations = JSON.parse(stats.compilation.assets["translations.js"].source());
+        if (stats.compilation.assets["translations.json"]) {
+            translations = JSON.parse(stats.compilation.assets["translations.json"].source());
         }
 
-        assert.property(stats.compilation.assets, "translations.js");
+        assert.property(stats.compilation.assets, "translations.json");
         assertCallback(translations, stats);
 
         doneCallback();
@@ -182,6 +182,12 @@ describe("filter", function () {
         });
     });
 
+    it("suppress dynamic translations errors for custom elements when attributed with suppress-dynamic-translation-error", function (done) {
+        translationsTest('dynamic-filter-custom-element.html', done, function (translations, stats) {
+            assert.deepEqual(stats.compilation.errors, []);
+        });
+    });
+
     it("can parse an invalid html file", function (done) {
         translationsTest('invalid-html.html', done, function (translations) {
             assert.propertyVal(translations, 'Result', 'Result');
@@ -268,7 +274,9 @@ describe("Register translations", function () {
 
             assert.deepEqual(translations, {
                 "Login": "Anmelden",
-                "Logout": "Abmelden"
+                "Logout": "Abmelden",
+                "Next": "Weiter",
+                "Back": "Zurück"
             });
         });
     });

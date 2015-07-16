@@ -78,12 +78,17 @@ StatefulParser.prototype.onopentag = function (name, attributes) {
             this.registerTranslation(translationId, defaultText);
     }, this);
 
+    Object.keys(attributes).forEach(function (name) {
+        this.handleAngularExpression(name, attributes[name]);
+    }, this);
+
     if (this.scope.translateDirective) {
         this.scope.defaultText = attributes["translate-default"];
     }
 };
 
-StatefulParser.prototype.onattribute = function (name, value) {
+// When using on attribute, then the element name didn't match fur custom elements???
+StatefulParser.prototype.handleAngularExpression = function (name, value) {
     var matches = ngFilters.matchAngularExpressions(value);
     matches.forEach(this.handleFilterMatch, this);
 
@@ -98,7 +103,7 @@ StatefulParser.prototype.onattribute = function (name, value) {
 };
 
 StatefulParser.prototype.ontext = function (text) {
-    this.scope.text = text;
+    this.scope.text = text = text.trim();
     if (this.scope.translateDirective && this.scope.translateContent) {
         var translationId = this.scope.translateId || text;
 

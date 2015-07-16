@@ -1,0 +1,16 @@
+<h2 ng-if="edit.user.id" translate>Benutzer bearbeiten</h2>
+<h2 ng-if="!edit.user.id" translate>Neuen Benuzer erstellen</h2>
+<div>
+	<tabset>
+		<tab
+				ng-repeat="t in edit.tabs"
+				heading="{{t.heading | translate}}"
+				select="edit.changeTab(t.route)"
+				active="t.active"
+				disabled="t.disabled"
+				suppress-dynamic-translation-error
+				>
+			<div ui-view></div>
+		</tab>
+	</tabset>
+</div>

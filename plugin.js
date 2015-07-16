@@ -25,7 +25,7 @@ function toContent(translations) {
         result[translationId] = translation.defaultText || translation.id;
     });
 
-    return JSON.stringify(result);
+    return JSON.stringify(result, null, '\t');
 }
 
 function AngularTranslatePlugin () {
@@ -110,7 +110,7 @@ AngularTranslatePlugin.prototype.registerTranslation = function (translation) {
  */
 AngularTranslatePlugin.prototype.emitResult = function (compilation, callback) {
     var content = toContent(this.translations);
-    compilation.assets["translations.js"] = new OriginalSource(content, "translations");
+    compilation.assets["translations.json"] = new OriginalSource(content, "translations");
     callback();
 };
 
@@ -170,13 +170,20 @@ AngularTranslatePlugin.prototype.handleRegisterTranslations = function (call) {
 
     try {
         var translations = call.arguments[0].properties.map(function (property) {
-            var translationId = self.compiler.parser.evaluateExpression(property.key);
+            var translationId;
+
+            if (property.key.type === 'Identifier') {
+                translationId = property.key.name;
+            } else {
+                translationId = self.compiler.parser.evaluateExpression(property.key).string;
+            }
+
             var defaultText = self.compiler.parser.evaluateExpression(property.value);
 
             if (!defaultText.isString()) {
                 throw new Error("The default text (value) must be a string literal (" + resource + ":" + property.value.loc.start.line + ").");
             }
-            return new Translation(translationId.string, defaultText.string, resource);
+            return new Translation(translationId, defaultText.string, resource);
         });
 
         translations.forEach(this.registerTranslation.bind(this));
