@@ -1,5 +1,5 @@
 var assert = require("chai").assert,
-    Translation = require("../Translation.js");
+    Translation = require("../lib/Translation.js");
 
 describe("Translations", function () {
     "use strict";
@@ -58,5 +58,23 @@ describe("Translations", function () {
         var translation = new Translation("hallo", null, [ "src/main.html", "src/login.html"]);
 
         assert.equal(translation.toString(), "Translation{ id: hallo, defaultText: null, resources: src/main.html,src/login.html}");
+    });
+
+    it("text returns the translation id if the translation has no default text", function () {
+        var translation = new Translation("Hello");
+
+        assert.equal(translation.text(), "Hello");
+    });
+
+    it("text returns the default text if the translation has a default text", function () {
+        var translation = new Translation("Hello", "Hallo");
+
+        assert.equal(translation.text(), "Hallo");
+    });
+
+    it("text returns a string, if a non string value is set as translation id or default text", function () {
+        var translation = new Translation("number", 5);
+
+        assert.equal(translation.text(), "5");
     });
 });

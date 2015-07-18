@@ -13,3 +13,6 @@ var editState = {
     controller: EditController,
     controllerAs: "editCtrl"
 };
+
+
+i18n.registerTranslation(5, true);
