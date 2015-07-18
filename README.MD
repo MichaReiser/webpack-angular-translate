@@ -24,9 +24,16 @@ var WebPackAngularTranslate = require("webpack-angular-translate");
 module: {
 	preLoaders: [
 		{
-			test: /\.html$/,
-			loader: WebPackAngularTranslate.loader()
-		}
+            test: /\.html$/,
+            loader: WebPackAngularTranslate.htmlLoader()
+        }
+	],
+	
+	loaders: [
+	    {   
+            test: /\.ts$/,
+            loader: WebPackAngularTranslate.jsLoader('typescript-simple-loader')
+        }
 	]
 },
 
@@ -34,6 +41,14 @@ plugins: [
 	new WebPackAngularTranslate.Plugin()
 ]
 ```
+
+The htmlLoader should be used as pre loader as it expects html as input (and not htlm embedded into js, what is the result of the html-loader). 
+The javascriptLoader can be used as any loader (pre / post or normal loader). It just requires that the input is valid javascript. 
+It's possible to only use the javascript loader or the html loader. 
+
+The plugin accepts the following options options in the constructor: 
+
+* fileName: The name of the file that contains all the translations, default `translations.json`
 
 ## Supported Expressions
 
@@ -73,6 +88,22 @@ with the `translate` directive or a filter can be applied directly.
 ### Service
 The `$translate` service is supported for literals only. No dynamic translations are supported. It's required
 that the `$translate` service is always called `$translate`. `$translate.instant` is not supported.
+
+The following examples are supported:
+
+```js
+$translate('Login');
+
+this.$translate('Login');
+_this.$translate('Login'); // also other names then _this
+
+$translate('Login', ..., ..., 'Anmelden');
+```
+
+If the `$translate` service is used with an expression (e.g. variable), then compilation will fail and an error is emitted 
+to the console. The error is emitted to remind the developer that he is responsible to register the dynamic translation. 
+If the dynamic translations have been registered, then the error can be suppressed using a `/* suppress-dynamic-translation-error: true */`
+comment in the block of the `$translate` call. This will suppress all errors for the current block.
  
  
 ## Register dynamic translations
@@ -115,9 +146,3 @@ var editState = {
  
  The `suppress-dynamic-translation-error` attribute can be defined on any element and will suppress any errors from the plugin
  for the attributed element and all it's child elements. This attribute is removed for non debuging builds.
-
-## Open issues
-* Extend documentation
-* Emit errors when $translate service is used with non literal-arguments
-* Make output file name configurable
-* Emit warnings if $translate.instant is used
