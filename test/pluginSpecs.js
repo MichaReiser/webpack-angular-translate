@@ -25,12 +25,11 @@ function translationsTest(fileName, doneCallback, assertCallback) {
             });
         }
 
-        var translations = undefined;
+        var translations = {};
         if (stats.compilation.assets["translations.json"]) {
             translations = JSON.parse(stats.compilation.assets["translations.json"].source());
         }
 
-        assert.property(stats.compilation.assets, "translations.json");
         assertCallback(translations, stats);
 
         doneCallback();
