@@ -16,13 +16,13 @@
     "cheerio": "^0.19.0",
     "escodegen": "^1.6.1",
     "htmlparser2": "^3.8.3",
-    "loader-utils": "^0.2.10",
+    "loader-utils": "^0.2.11",
     "node-libs-browser": "^0.5.2",
     "source-map": "^0.4.4",
-    "webpack": "^1.9.13"
+    "webpack": "^1.10.1"
   },
   "devDependencies": {
-    "chai": "^3.0.0",
+    "chai": "^3.1.0",
     "deep-extend": "^0.4.0",
     "html-loader": "^0.3.0",
     "mocha": "^2.2.5"
