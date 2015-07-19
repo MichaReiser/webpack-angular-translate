@@ -19,7 +19,6 @@
     "loader-utils": "^0.2.10",
     "node-libs-browser": "^0.5.2",
     "source-map": "^0.4.4",
-    "strformat": "0.0.7",
     "webpack": "^1.9.13"
   },
   "devDependencies": {
