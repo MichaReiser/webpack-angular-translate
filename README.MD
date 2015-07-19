@@ -1,6 +1,10 @@
 # webpack-angular-translate
 
+[![NPM](https://nodei.co/npm/webpack-angular-translate.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/webpack-angular-translate/)
+
 [![Build Status](https://travis-ci.org/DatenMetzgerX/webpack-angular-translate.svg?branch=master)](https://travis-ci.org/DatenMetzgerX/webpack-angular-translate)
+[![Dependency Status](https://gemnasium.com/DatenMetzgerX/webpack-angular-translate.svg)](https://gemnasium.com/DatenMetzgerX/webpack-angular-translate)
+[![npm version](https://badge.fury.io/js/webpack-angular-translate.svg)](http://badge.fury.io/js/webpack-angular-translate)
 
 This plugin extracts the translation id's and default texts from angular-translate and writes them into a separate json file. 
 The json file can be used by a backend component to initialize all the used translations. The benefit of this approach is, 
