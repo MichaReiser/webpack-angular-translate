@@ -1,0 +1,7 @@
+<h1 translate>Show User</h1>
+
+<b translate>User name: </b> {{ this.name}} <br />
+<b translate>E-Mail:</b> {{ this.email }} <br />
+
+<!--- Link with translated attribute that uses filter instead of translate-attr-title -->
+<a ui-sref="user" title="{{'Edit User' | translate}}" translate>Edit User</a>
