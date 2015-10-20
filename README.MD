@@ -8,7 +8,7 @@
 
 This plugin extracts the translation id's and default texts from angular-translate and writes them into a separate json file. 
 The json file can be used by a backend component to initialize all the used translations. The benefit of this approach is, 
-that the fronten developer can define all translations directly in the frontend code and do not need to modify any backend-code.
+that the frontend developer can define all translations directly in the frontend code and do not need to modify any backend-code.
 
 ## Getting started
 
