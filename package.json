@@ -17,8 +17,7 @@
     "escodegen": "^1.6.1",
     "htmlparser2": "^3.8.3",
     "loader-utils": "^0.2.11",
-    "node-libs-browser": "^0.5.2",
-    "source-map": "^0.4.4",
+    "source-map": "^0.5.3",
     "webpack": "^1.10.1"
   },
   "devDependencies": {
