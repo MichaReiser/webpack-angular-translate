@@ -1,6 +1,6 @@
 {
   "name": "webpack-angular-translate",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Webpack plugin that extracts the translation-ids with the default text.",
   "repository": "https://github.com/DatenMetzgerX/webpack-angular-translate",
   "main": "index.js",
@@ -26,7 +26,6 @@
     "html-loader": "^0.3.0",
     "mocha": "^2.2.5"
   },
-  
   "typescript": {
     "definition": "i18n.d.ts"
   }
