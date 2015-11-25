@@ -45,7 +45,7 @@ function compile(options, callback) {
             loaders: [
                 {
                     test: /\.html$/,
-                    loader: 'html?removeEmptyAttributes=false'
+                    loader: 'html?removeEmptyAttributes=false&attrs=[]'
                 }
             ],
             preLoaders: [
@@ -203,6 +203,12 @@ describe("HTML Loader", function () {
         it("can parse an invalid html file", function (done) {
             translationsTest('invalid-html.html', done, function (translations) {
                 assert.propertyVal(translations, 'Result', 'Result');
+            });
+        });
+
+        it("can parse an html containing an attribute that starts with a $", function (done) {
+            translationsTest('html-with-dollar-attribute.html', done, function (translations) {
+                assert.propertyVal(translations, 'Test', 'Test');
             });
         });
     });
