@@ -1,32 +1,43 @@
 {
   "name": "webpack-angular-translate",
   "version": "0.0.5",
-  "description": "Webpack plugin that extracts the translation-ids with the default text.",
+  "description": "Webpack plugin that extracts the translation-ids with the default texts.",
   "repository": "https://github.com/DatenMetzgerX/webpack-angular-translate",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "typings": "./i18n.d.ts",
   "scripts": {
-    "test": "mocha",
-    "start": "mocha --watch"
+    "pretest": "tsc",
+    "test": "mocha './test/**/*.specs.js'",
+    "start": "mocha --watch './test/**/*.specs.js'",
+    "prepublish": "tsc"
   },
+  "files": [
+    "src",
+    "dist",
+    "LICENSE",
+    "example",
+    "i18n.d.ts"
+  ],
   "author": "Micha Reiser <micha@famreiser.ch>",
   "license": "MIT",
   "dependencies": {
-    "acorn": "^2.1.0",
-    "ast-types": "^0.8.4",
+    "acorn": "^2.6.4",
+    "ast-types": "^0.8.14",
     "cheerio": "^0.19.0",
-    "escodegen": "^1.6.1",
-    "htmlparser2": "^3.8.3",
-    "loader-utils": "^0.2.11",
+    "escodegen": "^1.7.1",
+    "htmlparser2": "^3.9.0",
+    "loader-utils": "^0.2.12",
     "source-map": "^0.5.3",
-    "webpack": "^1.10.1"
+    "webpack": "^1.12.9"
   },
   "devDependencies": {
-    "chai": "^3.1.0",
+    "chai": "^3.4.1",
     "deep-extend": "^0.4.0",
-    "html-loader": "^0.3.0",
-    "mocha": "^2.2.5"
-  },
-  "typescript": {
-    "definition": "i18n.d.ts"
+    "html-loader": "^0.4.0",
+    "memory-fs": "^0.3.0",
+    "mocha": "^2.3.4",
+    "sinon": "^1.17.2",
+    "tslint": "^3.2.1",
+    "typescript": "^1.7.5"
   }
 }

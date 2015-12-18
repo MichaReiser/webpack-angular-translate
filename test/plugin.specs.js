@@ -1,7 +1,10 @@
 var assert = require("chai").assert,
     webpack = require('webpack'),
+    NodeWatchFileSystem = require("webpack/lib/node/NodeWatchFileSystem.js"),
     deepExtend = require('deep-extend'),
-    WebPackAngularTranslate = require("../index.js");
+    WebPackAngularTranslate = require("../dist/index.js"),
+    MemoryFS = require("memory-fs"),
+    path = require("path");
 
 /**
  * Helper function to implement tests that verify the result in the translations.js
@@ -11,23 +14,22 @@ var assert = require("chai").assert,
  * is the source of the translations file. The webpack stats (containing warnings and errors) is passed as second argument.
  */
 function translationsTest(fileName, doneCallback, assertCallback) {
-    compile({
+    var options = webpackOptions({
         entry: [ './test/cases/' + fileName ]
-    }, function (error, stats) {
-        if (error) {
-            assert.fail(null, error);
-            doneCallback();
-        }
+    });
+
+    compile(options, function (error, stats, fs) {
+        assert.notOk(error, JSON.stringify(error));
 
         if (stats.compilation.errors) {
             stats.compilation.errors.forEach(function (error) {
-                console.info(error.message);
+                console.warn(error.message);
             });
         }
 
         var translations = {};
         if (stats.compilation.assets["translations.json"]) {
-            translations = JSON.parse(stats.compilation.assets["translations.json"].source());
+            translations = JSON.parse(fs.readFileSync(path.join(__dirname, "dist/translations.json")));
         }
 
         assertCallback(translations, stats);
@@ -36,10 +38,11 @@ function translationsTest(fileName, doneCallback, assertCallback) {
     });
 }
 
-function compile(options, callback) {
-    options = deepExtend({
+function webpackOptions(options) {
+    "use strict";
+    return deepExtend({
         output: {
-            path: __dirname + "/dist"
+            path: path.join(__dirname, "dist")
         },
         module: {
             loaders: [
@@ -64,14 +67,45 @@ function compile(options, callback) {
             new WebPackAngularTranslate.Plugin()
         ]
     }, options);
+}
 
-
+function compile(options, callback) {
     var compiler = webpack(options);
-    compiler.run(callback);
+    var fs = new MemoryFS();
+    compiler.outputFileSystem = fs;
+    compiler.run(function (error, stats) { callback(error, stats, fs); });
 }
 
 describe("HTML Loader", function () {
     "use strict";
+
+    it("emits a useful error message if the plugin is missing", function (done) {
+        compile({
+            entry: "./test/cases/simple.html",
+            output: {
+                path: path.join(__dirname, "dist")
+            },
+            module: {
+                loaders: [
+                    {
+                        test: /\.html$/,
+                        loader: 'html?removeEmptyAttributes=false&attrs=[]'
+                    }
+                ],
+                preLoaders: [
+                    {
+                        test: /\.html$/,
+                        loader: WebPackAngularTranslate.htmlLoader()
+                    }
+                ]
+            }
+        }, function (error, stats) {
+            assert.isNull(error);
+            assert.equal(stats.compilation.errors.length, 1);
+            assert.include(stats.compilation.errors[0].message, "Module build failed: Error: The WebpackAngularTranslate plugin is missing. Add the plugin to your webpack configurations 'plugins' section.\n    at Object.loader ");
+            done();
+        });
+    });
 
     describe("directive", function () {
         "use strict";
@@ -118,12 +152,12 @@ describe("HTML Loader", function () {
             });
         });
 
-        it("emits a error if an angular expression is used as attribute id", function (done) {
+        it("emits an error if an angular expression is used as attribute id", function (done) {
             translationsTest('expressions.html', done, function (translations, stats) {
                 assert.lengthOf(stats.compilation.errors, 1, 'an error should have been emitted for the used angular expression as attribute id');
 
                 var error = stats.compilation.errors[0];
-                assert.include(error.message, "expressions.html uses an angular expression as translation id ({{editCtrl.title}}) or as default text (undefined), this is not supported. To suppress this error attribute the element or any parent attribute with suppress-dynamic-translation-error.");
+                assert.include(error.message, "expressions.html' uses an angular expression as translation id ('{{editCtrl.title}}') or as default text ('undefined'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents.");
             });
         });
 
@@ -174,7 +208,7 @@ describe("HTML Loader", function () {
             translationsTest('dynamic-filter-expression.html', done, function (translations, stats) {
                 assert.lengthOf(stats.compilation.errors, 1, 'the loader should emit an error message for the dynamic translation');
 
-                assert.include(stats.compilation.errors[0].message, "dynamic-filter-expression.html in the text or an attribute of the element <h1 id='top'>{{ editCtrl.title | translate }}</h1>.");
+                assert.include(stats.compilation.errors[0].message, "dynamic-filter-expression.html:8:14: A dynamic filter expression is used in the text or an attribute of the element '<h1 id='top'>{{ editCtrl.title | translate }}</h1>'. Add the 'suppress-dynamic-translation-error' attribute to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).");
                 assert.deepEqual({}, translations);
             });
         });
@@ -216,6 +250,28 @@ describe("HTML Loader", function () {
 
 describe("JSLoader", function () {
     "use strict";
+
+    it("emits a useful error message if the plugin is missing", function (done) {
+        compile({
+            entry: "./test/cases/simple.js",
+            output: {
+                path: path.join(__dirname, "dist")
+            },
+            module: {
+                preLoaders: [
+                    {
+                        test: /\.js/,
+                        loader: WebPackAngularTranslate.jsLoader()
+                    }
+                ]
+            }
+        }, function (error, stats) {
+            assert.isNull(error);
+            assert.equal(stats.compilation.errors.length, 1);
+            assert.include(stats.compilation.errors[0].message, "Module build failed: Error: The WebpackAngularTranslate plugin is missing. Add the plugin to your webpack configurations 'plugins' section.\n    at Object.jsLoader ");
+            done();
+        });
+    });
 
     describe("$translate", function () {
 
@@ -301,8 +357,8 @@ describe("JSLoader", function () {
             translationsTest('registerInvalidTranslation.js', done, function (translations, stats) {
                 assert.lengthOf(stats.compilation.errors, 2);
 
-                assert.include(stats.compilation.errors[0].message, "Illegal argument for call to i18n.registerTranslation: requires at least the argument translationId that needs to be a string literal ");
-                assert.include(stats.compilation.errors[1].message, "Illegal argument for call to i18n.registerTranslation: requires at least the argument translationId that needs to be a string literal ");
+                assert.include(stats.compilation.errors[0].message, "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal");
+                assert.include(stats.compilation.errors[1].message, "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal");
 
                 assert.deepEqual(translations, {});
             });
@@ -327,23 +383,82 @@ describe("JSLoader", function () {
             translationsTest('registerInvalidTranslations.js', done, function (translations, stats) {
                 assert.lengthOf(stats.compilation.errors, 2);
 
-                assert.include(stats.compilation.errors[0].message, "Illegal argument for call to i18n.registerTranslations: requires single argument that is an object where the key is the translationId and the value is the default text");
-                assert.include(stats.compilation.errors[1].message, "Illegal argument for call to i18n.registerTranslations: The value for the key 'key' needs to be a literal (string) ");
+                assert.include(stats.compilation.errors[0].message, "Illegal argument for call to i18n.registerTranslations: requires a single argument that is an object where the key is the translationId and the value is the default text ");
+                assert.include(stats.compilation.errors[1].message, "Illegal argument for call to i18n.registerTranslations: The value for the key 'key' needs to be a literal");
                 assert.deepEqual(translations, {});
             });
         });
     });
 });
 
-describe("Common", function () {
+describe("Plugin", function () {
     it("emits an error if the same id with different default texts is used", function (done) {
         translationsTest('differentDefaultTexts.js', done, function (translations, stats) {
             assert.lengthOf(stats.compilation.errors, 1, "An error should be emitted if two id's have a different default text");
 
             var error = stats.compilation.errors[0];
-            assert.match(error.message, /^Webpack-Angular-Translate: Two translations with the same id but different default text found \(Translation\{ id: Next, defaultText: Weiter, resources: .+differentDefaultTexts\.js}, Translation\{ id: Next, defaultText: Missing, resources: .+differentDefaultTexts.js}\)\. Please define the same default text twice or specify the default text only once\.$/);
+            assert.match(error.message, /^Webpack-Angular-Translate: Two translations with the same id but different default text found\.\n\tExisting: \{ id: 'Next', defaultText: 'Weiter', usages: \[ .+differentDefaultTexts\.js:5:8 ] }\n\tnew: \{ id: 'Next', defaultText: 'Missing', usages: \[ .+differentDefaultTexts.js:6:8 ] }\n\tPlease define the same default text twice or specify the default text only once\.$/);
 
             assert.deepEqual(translations, { "Next": "Weiter"}); // First match wins
         });
+    });
+
+    it("emits a warning if the translation id is missing", function (done) {
+        "use strict";
+
+        translationsTest('emptyTranslate.html', done, function (translations, stats) {
+            assert.lengthOf(stats.compilation.warnings, 1, "A warning should have been emitted if a translation is used with an empty translation id");
+
+            var warning = stats.compilation.warnings[0];
+            assert.match(warning.message, /^Invalid angular-translate translation '\{ id: '', defaultText: 'undefined', usages: \[ .+\/test\/cases\/emptyTranslate.html:7:1 ] }' found\. The id of the translation is empty, consider removing the translate attribute \(html\) or defining the translation id \(js\)\.$/);
+
+            assert.deepEqual(translations, { }); // First match wins
+        });
+    });
+
+    it("does not add translations twice if file is recompiled after change", function (done) {
+        var testCase = path.join(__dirname, "../fileChange.js");
+        var fs = new MemoryFS();
+        fs.mkdirpSync(path.join(__dirname, "../"));
+        fs.writeFileSync(testCase, "require('./otherFile.js');\n" +
+                                    "i18n.registerTranslation('NEW_USER', 'New user');\n" +
+                                    "i18n.registerTranslation('DELETE_USER', 'Delete User');\n" +
+                                    "i18n.registerTranslation('WillBeDeleted', 'Delete');");
+        fs.writeFileSync(path.join(__dirname, "../otherFile.js"), "i18n.registerTranslation('DELETE_USER', 'Delete User');");
+
+        var options = webpackOptions({
+            entry: "./fileChange.js"
+        });
+        var compiler = webpack(options);
+        compiler.inputFileSystem = fs;
+        compiler.resolvers.normal.fileSystem = compiler.inputFileSystem;
+        compiler.resolvers.context.fileSystem = compiler.inputFileSystem;
+        compiler.outputFileSystem = fs;
+
+        var firstRun = true;
+        var watching = compiler.watch({}, function (error, stats) {
+            "use strict";
+
+            assert.notOk(error, "Failed to compile the assets");
+
+            if (firstRun) {
+                assert.deepEqual(stats.compilation.errors, [], "First compilation failed with errors");
+
+                firstRun = false;
+                fs.writeFileSync(testCase, "i18n.registerTranslation('NEW_USER', 'Neuer Benutzer');");
+                watching.invalidate(); // watch doesn't seem to work with memory fs
+            } else {
+                assert.deepEqual(stats.compilation.errors, [], "The implementation should not emit duplicate translation errors after recompilation with different text.");
+
+                var translations = JSON.parse(fs.readFileSync(path.join(__dirname, "dist/translations.json")));
+                assert.propertyVal(translations, "NEW_USER", "Neuer Benutzer", "Uses the updated translation");
+                assert.propertyVal(translations, "DELETE_USER", "Delete User", "Does not delete translations used by other resources");
+                assert.notProperty(translations, "WillBeDeleted", "The property is not used by fileChange.js anymore, so we should remove it from the translations.json");
+
+                watching.close(done);
+            }
+        });
+
+
     });
 });
