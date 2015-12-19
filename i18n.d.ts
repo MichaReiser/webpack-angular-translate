@@ -12,6 +12,7 @@ declare module i18n {
 	 * Registers multiple translations where the key is the translation id and the value is the
 	 * default text. Only literal values are supported. 
 	 * @params translations the object hash containing the translations to register
+     * @returns the array with the translation ids
 	*/
-	function registerTranslations(translations: { [translationId: string] : string}) : void;
+	function registerTranslations(translations: { [translationId: string] : string}) : string[];
 }

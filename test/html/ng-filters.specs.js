@@ -1,5 +1,5 @@
 var assert = require("chai").assert,
-    filters = require('../lib/ngFilters.js');
+    filters = require('../../dist/html/ng-filters');
 
 describe("the attribute expressions matches angular-filters in attributes (without {{}}).", function () {
     "use strict";

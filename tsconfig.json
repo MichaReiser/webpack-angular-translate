@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "outDir": "dist",
+    "moduleResolution": "node"
+  },
+  "files": [
+    "src/index.ts",
+    "src/html/html-loader.ts",
+    "src/js/js-loader.ts",
+    "typings/tsd.d.ts"
+  ]
+}
