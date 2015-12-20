@@ -410,7 +410,7 @@ describe("Plugin", function () {
             assert.lengthOf(stats.compilation.warnings, 1, "A warning should have been emitted if a translation is used with an empty translation id");
 
             var warning = stats.compilation.warnings[0];
-            assert.match(warning.message, /^Invalid angular-translate translation '\{ id: '', defaultText: 'undefined', usages: \[ .+\/test\/cases\/emptyTranslate.html:7:1 ] }' found\. The id of the translation is empty, consider removing the translate attribute \(html\) or defining the translation id \(js\)\.$/);
+            assert.match(warning.message, /^Invalid angular-translate translation '\{ id: '', defaultText: 'undefined', usages: \[ .+\/test\/cases\/emptyTranslate.html:5:8 ] }' found\. The id of the translation is empty, consider removing the translate attribute \(html\) or defining the translation id \(js\)\.$/);
 
             assert.deepEqual(translations, { }); // First match wins
         });
@@ -458,7 +458,5 @@ describe("Plugin", function () {
                 watching.close(done);
             }
         });
-
-
     });
 });

@@ -14,6 +14,7 @@ describe("StatefulHtmlParserSpecs", function () {
         loaderContext = {
             registerTranslation: sinon.spy(),
             emitError: sinon.spy(),
+            emitWarning: sinon.spy(),
             resource: "test.html"
         }
     });
@@ -24,7 +25,7 @@ describe("StatefulHtmlParserSpecs", function () {
 
             sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Simple", undefined, {
                 resource: "test.html",
-                loc: { line: 1, column: 17 }
+                loc: { line: 1, column: 0 }
             }));
         });
 
@@ -33,20 +34,56 @@ describe("StatefulHtmlParserSpecs", function () {
 
             sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Simple", "Other default", {
                 resource: "test.html",
-                loc: { line: 1, column: 51 }
+                loc: { line: 1, column: 0 }
+            }));
+        });
+
+        it("only translates the attribute if the translation id is undefined", function () {
+            parse("<translate translate-attr-title='Simple'></translate>");
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Simple", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
+            }));
+
+            assert(loaderContext.registerTranslation.callCount, 1);
+        });
+
+        it("only translates the attribute if the translation id is empty", function () {
+            parse("<translate translate-attr-title='Simple'>    </translate>");
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Simple", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
+            }));
+
+            assert(loaderContext.registerTranslation.callCount, 1);
+        });
+
+        it("translates the attribute and the content of the element if translate-attr is set and the element has non empty content", function () {
+            parse("<translate translate-attr-title='Attribute'>Element-Text</translate>");
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Attribute", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
+            }));
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Element-Text", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
             }));
         });
 
         it("emits an error if the content of the element is an expression", function () {
             parse("<translate>{{controller.title}}</translate>");
 
-            sinon.assert.calledWith(loaderContext.emitError, "Failed to extract the angular-translate translations from test.html:1:31: The element '<translate>{{controller.title}}</translate>'  in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents.");
+            sinon.assert.calledWith(loaderContext.emitError, "Failed to extract the angular-translate translations from test.html:1:0: The element '<translate>{{controller.title}}</translate>'  in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents.");
         });
 
         it("emits an error if the default text is an expression", function () {
             parse("<translate translate-default='{{controller.title}}'>Simple</translate>");
 
-            sinon.assert.calledWith(loaderContext.emitError, "Failed to extract the angular-translate translations from test.html:1:58: The element '<translate translate-default='{{controller.title}}'>Simple</translate>'  in 'test.html' uses an angular expression as translation id ('Simple') or as default text ('{{controller.title}}'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents.");
+            sinon.assert.calledWith(loaderContext.emitError, "Failed to extract the angular-translate translations from test.html:1:0: The element '<translate translate-default='{{controller.title}}'>Simple</translate>'  in 'test.html' uses an angular expression as translation id ('Simple') or as default text ('{{controller.title}}'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents.");
         });
 
         it("suppresses the error if the translation element is an expression and the element is attributed with suppress-dynamic-translation-error", function () {
@@ -70,7 +107,7 @@ describe("StatefulHtmlParserSpecs", function () {
 
             sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Simple", undefined, {
                 resource: "test.html",
-                loc: { line: 1, column: 24 }
+                loc: { line: 1, column: 0 }
             }));
         });
 
@@ -79,7 +116,7 @@ describe("StatefulHtmlParserSpecs", function () {
 
             sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Simple", undefined, {
                 resource: "test.html",
-                loc: { line: 1, column: 21 }
+                loc: { line: 1, column: 0 }
             }));
         });
 
@@ -88,14 +125,64 @@ describe("StatefulHtmlParserSpecs", function () {
 
             sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Simple", "Other default", {
                 resource: "test.html",
-                loc: { line: 1, column: 55 }
+                loc: { line: 1, column: 0 }
+            }));
+        });
+
+        it("only translates the attribute if the element content is empty", function () {
+            parse("<div translate translate-attr-title='Simple'></div>");
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Simple", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
+            }));
+
+            assert(loaderContext.registerTranslation.callCount, 1);
+        });
+
+        it("only translates the attribute if the translation id is empty", function () {
+            parse("<div translate translate-attr-title='Simple'>    </div>");
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Simple", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
+            }));
+
+            assert(loaderContext.registerTranslation.callCount, 1);
+        });
+
+        it("translates the attribute and the content of the element if translate-attr is set and the element has non empty content", function () {
+            parse("<div translate translate-attr-title='Attribute'>Element-Text</div>");
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Attribute", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
+            }));
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Element-Text", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
+            }));
+        });
+
+        it("translates the attribute and the content of the element if translate-attr is set and the translate attribute has an assigned value", function () {
+            parse("<div translate='Element-Text' translate-attr-title='Attribute'></div>");
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Attribute", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
+            }));
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Element-Text", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
             }));
         });
 
         it("emits an error if the value of the translate id is an expression", function () {
             parse("<div translate='{{controller.title}}'></div>");
 
-            sinon.assert.calledWith(loaderContext.emitError, "Failed to extract the angular-translate translations from test.html:1:38: The element '<div translate='{{controller.title}}'>...</div>'  in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents.");
+            sinon.assert.calledWith(loaderContext.emitError, "Failed to extract the angular-translate translations from test.html:1:0: The element '<div translate='{{controller.title}}'>...</div>'  in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents.");
         });
 
         it("suppresses the error of a dynamic value in the translation id attribute if the element is attributed with suppress-dynamic-translation-error", function () {
@@ -104,15 +191,19 @@ describe("StatefulHtmlParserSpecs", function () {
             assert.notOk(loaderContext.registerTranslation.called, "It should not register the translation");
         });
 
-        it("registers a translation only once if the element has an empty string as content and no translation id set", function () {
+        it("emits an error if a translation does not have a valid id", function () {
             parse("<title translate>\n     </title>");
 
-            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("", undefined, {
-                resource: "test.html",
-                loc: { line: 2, column: 5 }
-            }));
+
+            sinon.assert.calledWith(loaderContext.emitError, "Failed to extract the angular-translate translations from test.html:2:5: the element uses the translate directive but does not specify a translation id nor has any translated attributes (translate-attr-*). Specify a translation id or remove the translate-directive.");
             // ensure the translation is not registered a second time because of a test if scope.text is falsy (what is the case above).
-            assert.equal(loaderContext.registerTranslation.callCount, 1);
+            assert.notOk(loaderContext.registerTranslation.called);
+        });
+
+        it("doesn't emit an error if a translation does not have a valid id but an attribute has been translated", function () {
+            parse("<title translate translate-attr-title='test'>\n     </title>");
+
+            assert.notOk(loaderContext.emitError.called);
         });
     });
 
@@ -137,7 +228,7 @@ describe("StatefulHtmlParserSpecs", function () {
 
 
         it("doesn't register a translation for the content of an element attributed with translate-attr", function () {
-            parse("<div translate translate-attr-title='test'>Not translated content</div>");
+            parse("<div translate translate-attr-title='test'><span>Test</span></div>");
 
             sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("test", undefined, {
                 resource: "test.html",

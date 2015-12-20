@@ -22,14 +22,19 @@ export default class ElementContext {
     translateDirective = false;
 
     /**
-     * Should the content of the element be translated (instead of the attributes)
+     * Does the element has translate-attr-* attributes?
      */
-    translateContent = true;
+    translateAttributes = true;
+
+    /**
+     * The position in the html file where the element has started.
+     */
+    elementStartPosition: number;
 
     /**
      * The translation id
      */
-    translateId: string;
+    translationId: string;
 
     /**
      * The default text of the translation
