@@ -9,7 +9,9 @@
     "pretest": "tsc",
     "test": "mocha './test/**/*.specs.js'",
     "start": "mocha --watch './test/**/*.specs.js'",
-    "prepublish": "tsc"
+    "prepublish": "tsc",
+    "coverage": "node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha './test/**/*.specs.js'",
+	"coveralljs": "npm run coverage && cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js && rm -rf coverage"
   },
   "files": [
     "src",
@@ -32,8 +34,10 @@
   },
   "devDependencies": {
     "chai": "^3.4.1",
+    "coveralls": "^2.11.6",
     "deep-extend": "^0.4.0",
     "html-loader": "^0.4.0",
+    "istanbul": "^0.4.1",
     "memory-fs": "^0.3.0",
     "mocha": "^2.3.4",
     "sinon": "^1.17.2",
