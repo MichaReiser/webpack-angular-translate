@@ -23,20 +23,19 @@ Configure the loader and the plugin in the webpack configuration.
 ```js
 var WebPackAngularTranslate = require("webpack-angular-translate");
 
-
 module: {
 	preLoaders: [
 		{
-            test: /\.html$/,
-            loader: WebPackAngularTranslate.htmlLoader()
-        }
+			test: /\.html$/,
+			loader: WebPackAngularTranslate.htmlLoader()
+		}
 	],
-	
+
 	loaders: [
-	    {   
-            test: /\.js$/,
-            loader: WebPackAngularTranslate.jsLoader()
-        }
+		{   
+			test: /\.js$/,
+			loader: WebPackAngularTranslate.jsLoader()
+		}
 	]
 },
 
@@ -79,7 +78,7 @@ The directive is supported for static translations. Dynamic translations are not
 <translate translate-default="Default text">Translation-ID</div>
 
 <!-- extension to angular-translate, define default for attributes -->
-<div translate translate-attr-title="TITLE-ID" translate-default-attr-title="Default for title attr" />
+<a translate translate-attr-title="TITLE-ID" translate-default-attr-title="Default for title attr" href="#"><i class="fa-home fa" /></a>
 ```
 
  
@@ -131,22 +130,24 @@ The controller defines the id of the translation to use:
 
  ```js
  function EditController(user) {
- 	if (user.isNew()) {
-    	this.title = i18n.registerTranslation("NEW_USER", "New user");
-    } else {
-    	this.title = i18n.registerTranslation("EDIT_USER", "Edit user");
-	}
+ 	// compiles to this.title = user.isNew() ? "NEW_USER" : "EDIT_USER";
+   	this.title = user.isNew() ? i18n.registerTranslation("NEW_USER", "New user") : i18n.registerTranslation("EDIT_USER", "Edit user");
 }
-      
-var editState = {
-	name: "edit",
-    url: "/{id:int}/edit",
-    template: require("./registerTranslation.html"),
-    controller: EditController,
-    controllerAs: "editCtrl"
-};
  ```
  
  The call to `i18n.registerTranslation` registers the translation id with the default text (optional). The result of the function is the id of the translation to use. This makes it possible to register translations inplace. Calls to `i18n.registerTranslation` compile to the passed in translation id (the function is not evaluated at runtime).
  
  The `suppress-dynamic-translation-error` attribute can be defined on any element and will suppress any errors from the plugin  for the attributed element and all it's child elements. This attribute is removed for non debugging builds.
+
+
+## API
+
+**`i18n.registerTranslation(translationId: string, defaultText?: string): string`**
+Registers a translation with the given translation id and default text. If the default text is absent, then the translation id is used as default text. 
+
+Returns the passed in translation id. Can be used to pass to the translate service or can be bound to a translate directive.
+
+**`i18n.registerTranslations({ translationId: defaultText } ): string[]`**
+Registers a set of translations. Accepts a single object where the keys are used as translation ids and the value are used as default text. 
+
+Returns an array containing the passed in translation ids. The array can be passed to the translate service. 
