@@ -1,3 +1,8 @@
+## 0.1.1 (2015-12-21)
+
+Bugfixes: 
+- Correctly handle elements with translated element content and attribute (c1656320c1bafbe1ee8c7a2094dbca89ec2610b5)
+
 ## 0.1.0 (2015-12-19)
 
 Features:
@@ -7,5 +12,4 @@ Features:
 - Emit an error if a loader is registered, but the plugin is not
 
 Bugfixes:
-
   - Correctly register empty elements with translate attribute (`<any translate='test'></any>`)
