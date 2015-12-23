@@ -1,3 +1,8 @@
+## 0.1.2 (2015-12-23)
+
+Bugfixes: 
+- Only extract translation from attributes that use real expressions (0369ca011c9b7c958ca7cb10a4bb334ec072565d)
+
 ## 0.1.1 (2015-12-21)
 
 Bugfixes: 
