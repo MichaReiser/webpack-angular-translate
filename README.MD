@@ -25,23 +25,23 @@ Configure the loader and the plugin in the webpack configuration.
 var WebPackAngularTranslate = require("webpack-angular-translate");
 
 module: {
-	preLoaders: [
-		{
-			test: /\.html$/,
-			loader: WebPackAngularTranslate.htmlLoader()
-		}
-	],
+    preLoaders: [
+        {
+            test: /\.html$/,
+            loader: WebPackAngularTranslate.htmlLoader()
+        }
+    ],
 
-	loaders: [
-		{   
-			test: /\.js$/,
-			loader: WebPackAngularTranslate.jsLoader()
-		}
-	]
+    loaders: [
+        {
+            test: /\.js$/,
+            loader: WebPackAngularTranslate.jsLoader()
+         }
+    ]
 },
 
 plugins: [
-	new WebPackAngularTranslate.Plugin()
+    new WebPackAngularTranslate.Plugin()
 ]
 ```
 
@@ -144,11 +144,13 @@ The controller defines the id of the translation to use:
 ## API
 
 **`i18n.registerTranslation(translationId: string, defaultText?: string): string`**
+
 Registers a translation with the given translation id and default text. If the default text is absent, then the translation id is used as default text. 
 
 Returns the passed in translation id. Can be used to pass to the translate service or can be bound to a translate directive.
 
 **`i18n.registerTranslations({ translationId: defaultText } ): string[]`**
+
 Registers a set of translations. Accepts a single object where the keys are used as translation ids and the value are used as default text. 
 
 Returns an array containing the passed in translation ids. The array can be passed to the translate service. 

@@ -88,15 +88,15 @@ describe("StatefulHtmlParserSpecs", function () {
         it("suppresses the error if the translation element is an expression and the element is attributed with suppress-dynamic-translation-error", function () {
             parse("<translate suppress-dynamic-translation-error>{{controller.title}}</translate>");
 
-            assert.notOk(loaderContext.emitError.called, "It should not emit an error");
-            assert.notOk(loaderContext.registerTranslation.called, "It should not register the translation");
+            assert.isNotOk(loaderContext.emitError.called, "It should not emit an error");
+            assert.isNotOk(loaderContext.registerTranslation.called, "It should not register the translation");
         });
 
         it("suppresses the error if the default text is an expression and the element is attributed with suppress-dynamic-translation-error", function () {
             parse("<translate translate-default='{{controller.title}}' suppress-dynamic-translation-error>simple</translate>");
 
-            assert.notOk(loaderContext.emitError.called, "It should not emit an error");
-            assert.notOk(loaderContext.registerTranslation.called, "It should not register the translation");
+            assert.isNotOk(loaderContext.emitError.called, "It should not emit an error");
+            assert.isNotOk(loaderContext.registerTranslation.called, "It should not register the translation");
         });
     });
 
@@ -307,14 +307,26 @@ describe("StatefulHtmlParserSpecs", function () {
         });
     });
 
-    describe("<any attr='any | translate'>", function () {
+    describe("<any attr='{{ any | translate }}'>", function () {
         it("extracts the translation from an attribute with translate filter", function () {
-            parse("<img src='xy' title=\"{{ 'Waterfall' | translate}}\" />");
+            parse("<img src='xy' title=\"{{ 'Waterfall' | translate }}\" />");
 
             sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Waterfall", undefined, {
                 resource: "test.html",
                 loc: { line: 1, column: 0 }
             }));
+        });
+
+        it("emits an error if the translate filter is not the first in the filter chain", function () {
+            parse("<img src='xz' alt='{{ \"title\" | uppercase | translate }}' />");
+
+            sinon.assert.calledWith(loaderContext.emitError, "Failed to extract the angular-translate translations from test.html:1:0: Another filter is used before the translate filter in the element <img src='xz' alt='{{ \"title\" | uppercase | translate }}'>...</img>. Add the 'suppress-dynamic-translation-error' to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).");
+        });
+
+        it("emits an error if the translate filter is used for a dynamic value", function () {
+            parse("<img src='xz' alt='{{ ctrl.imgAlt | translate }}' />");
+
+            sinon.assert.calledWith(loaderContext.emitError, "Failed to extract the angular-translate translations from test.html:1:0: A dynamic filter expression is used in the text or an attribute of the element '<img src='xz' alt='{{ ctrl.imgAlt | translate }}'>...</img>'. Add the 'suppress-dynamic-translation-error' attribute to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).");
         });
     });
 

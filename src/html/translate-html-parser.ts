@@ -49,7 +49,7 @@ export  default class TranslateHtmlParser implements htmlparser.Handler {
 
         this.context.suppressDynamicTranslationErrors = typeof(attributes[SUPPRESS_ATTRIBUTE_NAME]) !== "undefined";
 
-        // <any attr='{{ x | translate }'></any>
+        // <any attr='{{ x | translate }}'></any>
         Object.keys(attributes).forEach(name => this.handleAngularExpression(attributes[name]));
 
         if (!this.context.translateDirective) {
