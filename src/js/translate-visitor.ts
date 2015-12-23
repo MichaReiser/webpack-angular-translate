@@ -70,36 +70,46 @@ export default class TranslateVisitor extends types.PathVisitor implements  type
             this.throwSuppressableError(`A call to ${TRANSLATE_SERVICE_NAME} requires at least one argument that is the translation id`, path);
         }
 
-        let translationIds: any[];
-
-        // Extract translation id as string or as array of strings
-        if (n.Literal.check(args[0])) {
-            translationIds = [ (<ESTree.Literal> args[0]).value ];
-        } else if (n.ArrayExpression.check(args[0])) {
-            const arrayExpression = <ESTree.ArrayExpression> args[0];
-            translationIds = arrayExpression.elements.map(element => {
-                if (n.Literal.check(element)) {
-                    return (<ESTree.Literal> element).value;
-                }
-                this.throwSuppressableError("The array with the translation id should only contain string literals", path);
-            });
-        } else {
-            this.throwSuppressableError("The translation id should either be a string literal or an array containing string literals", path);
-        }
-
-        // Extract default text
-        let defaultText: string;
-        if (args.length > 3) {
-            if (n.Literal.check(args[3])) {
-                defaultText = "" + (<ESTree.Literal>args[3]).value;
-            } else {
-                this.throwSuppressableError("The default text should be a string literal", path);
-            }
-        }
+        const translationIds = this.getTranslationIdFromTranslateCall(path);
+        const defaultText = this.getDefaultTextFromTranslateCall(path);
 
         const translations = translationIds.map(translationId => this.createTranslation(translationId, defaultText, call));
         translations.forEach(this.loader.registerTranslation);
     }
+
+    private getTranslationIdFromTranslateCall(path: AstTypes.NodePath<ESTree.CallExpression>): any[] {
+        const args = path.node.arguments;
+
+        if (n.Literal.check(args[0])) {
+            return [(<ESTree.Literal> args[0]).value];
+        }
+
+        if (n.ArrayExpression.check(args[0])) {
+            const arrayExpression = <ESTree.ArrayExpression> args[0];
+            return arrayExpression.elements.map(element => {
+                if (n.Literal.check(element)) {
+                    return (<ESTree.Literal> element).value;
+                }
+                this.throwSuppressableError("The array with the translation ids should only contain literals", path);
+            });
+        }
+
+        this.throwSuppressableError("The translation id should either be a string literal or an array containing string literals", path);
+    };
+
+    private getDefaultTextFromTranslateCall(path: AstTypes.NodePath<ESTree.CallExpression>): any {
+        const args = path.node.arguments;
+
+        if (args.length > 3) {
+            if (n.Literal.check(args[3])) {
+                return (<ESTree.Literal>args[3]).value;
+            }
+
+            this.throwSuppressableError("The default text should be a string literal", path);
+        }
+
+        return undefined;
+    };
 
     /**
      * Handles a call to i18n.registerTranslation(translationId, defaultText?).

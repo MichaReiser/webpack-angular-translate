@@ -60,7 +60,12 @@ function loader(source: string, sourceMaps: any): void|string {
 
 function removeSuppressTranslationErrorAttributes(source: string): string {
     const $ = cheerio.load(source);
-    $(`[${SUPPRESS_ATTRIBUTE_NAME}]`).removeAttr(SUPPRESS_ATTRIBUTE_NAME);
+    const elementsWithSuppressAttribute = $(`[${SUPPRESS_ATTRIBUTE_NAME}]`);
+    if (elementsWithSuppressAttribute.length === 0) {
+        return source;
+    }
+
+    elementsWithSuppressAttribute.removeAttr(SUPPRESS_ATTRIBUTE_NAME);
     return $.html();
 }
 

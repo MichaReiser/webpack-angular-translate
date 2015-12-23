@@ -1,6 +1,5 @@
 var assert = require("chai").assert;
 var sinon = require("sinon");
-var htmlparser = require("htmlparser2");
 
 var StatefulHtmlParser = require("../../dist/html/translate-html-parser").default;
 var Translation = require("../../dist/translation").default;
@@ -267,6 +266,15 @@ describe("StatefulHtmlParserSpecs", function () {
             parse("{{ 'test' | translate | uppercase }}");
 
             sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("test", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
+            }));
+        });
+
+        it("extracts the translation id if the translate filter is used inside a text body", function () {
+            parse("{{ ctrl.total | number:0 }} {{ 'USD' | translate }} ($)");
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("USD", undefined, {
                 resource: "test.html",
                 loc: { line: 1, column: 0 }
             }));

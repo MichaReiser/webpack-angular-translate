@@ -8,7 +8,6 @@ var isCommentedWithSuppressError = require("../../dist/js/translate-visitor").is
 
 describe("TranslateVisitor", function () {
     var loaderContext;
-    var emitError;
     var visitor;
 
     beforeEach(function () {
@@ -144,7 +143,7 @@ describe("TranslateVisitor", function () {
             sinon.assert.calledWith(loaderContext.emitError, "Illegal argument for call to $translate: A call to $translate requires at least one argument that is the translation id. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1).");
         });
 
-        it("emits an error if the translation id is not a literal", function () {
+        it("emits an error if the translation id is not an array expression and neither a literal", function () {
             var translateCall = b.callExpression($translate, [b.identifier("test")]);
             translateCall.loc = { start: { line: 1, column: 1 } };
             loaderContext.resource = "test.js";
@@ -152,6 +151,16 @@ describe("TranslateVisitor", function () {
             visitor.visit(translateCall);
 
             sinon.assert.calledWith(loaderContext.emitError, "Illegal argument for call to $translate: The translation id should either be a string literal or an array containing string literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1).");
+        });
+
+        it("emits an error if any translation id in the passed in array is not a literal", function () {
+            var translateCall = b.callExpression($translate, [ b.arrayExpression([ b.literal("test"), b.identifier("notValid")])]);
+            translateCall.loc = { start: { line: 1, column: 0 }};
+            loaderContext.resource = "test.js";
+
+            visitor.visit(translateCall);
+
+            sinon.assert.calledWith(loaderContext.emitError, "Illegal argument for call to $translate: The array with the translation ids should only contain literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:0).");
         });
 
         it("emits an error if the default text is not a literal", function () {
