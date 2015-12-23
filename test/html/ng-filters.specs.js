@@ -5,73 +5,89 @@ describe("the attribute expressions matches angular-filters in attributes (witho
     "use strict";
 
     it("matches a simple translate attribute", function () {
-        var result = filters.matchAttribute('"name" | translate');
+        var result = filters.matchAttribute('{{"name" | translate}}');
 
         assert.deepEqual(result, {
             value: '"name"',
-            match: '"name" | translate',
+            match: '{{"name" | translate}}',
             previousFilters: undefined
         });
     });
 
     it("matches an attribute with translate followed by another filter", function () {
-        var result = filters.matchAttribute('"name" | translate | limitTo:5');
+        var result = filters.matchAttribute('{{"name" | translate | limitTo:5}}');
 
         assert.deepEqual(result, {
             value: '"name"',
-            match: '"name" | translate | limitTo:5',
+            match: '{{"name" | translate | limitTo:5}}',
             previousFilters: undefined
         });
     });
 
     it("matches an attribute with translate followed by another filter without spaces", function () {
-        var result = filters.matchAttribute('"name"|translate|limitTo:5');
+        var result = filters.matchAttribute('{{"name"|translate|limitTo:5}}');
 
         assert.deepEqual(result, {
             value: '"name"',
-            match: '"name"|translate|limitTo:5',
+            match: '{{"name"|translate|limitTo:5}}',
             previousFilters: undefined
         });
     });
 
     it("matches an attribute with translate where translate follows another filter", function () {
-        var result = filters.matchAttribute('"name" | currency | translate');
+        var result = filters.matchAttribute('{{"name" | currency | translate}}');
 
         assert.deepEqual(result, {
             value: '"name"',
-            match: '"name" | currency | translate',
+            match: '{{"name" | currency | translate}}',
             previousFilters: "currency"
         });
     });
 
     it("matches an attribute with translate where translate follows another filter without spaces", function () {
-        var result = filters.matchAttribute('"name"|currency|translate');
+        var result = filters.matchAttribute('{{"name"|currency|translate}}');
 
         assert.deepEqual(result, {
             value: '"name"',
-            match: '"name"|currency|translate',
+            match: '{{"name"|currency|translate}}',
             previousFilters: "currency"
         });
     });
 
     it("matches property expressions", function () {
-        var result = filters.matchAttribute('user.sex | translate');
+        var result = filters.matchAttribute('{{user.sex | translate}}');
 
         assert.deepEqual(result, {
             value: 'user.sex',
-            match: 'user.sex | translate',
+            match: '{{user.sex | translate}}',
+            previousFilters: undefined
+        });
+    });
+
+    it("matches the expression inside a string", function () {
+        var result = filters.matchAttribute('Static Text: {{ "CHF" | translate }}');
+
+        assert.deepEqual(result, {
+            value: '"CHF"',
+            match: '{{ "CHF" | translate }}',
             previousFilters: undefined
         });
     });
 
     it("doesn't match an attribute containing translate without a filter pipe", function () {
-        var result = filters.matchAttribute('"name" translate');
+        var result = filters.matchAttribute('{{"name" translate}}');
 
         assert.isUndefined(result);
     });
 
     it("doesn't match '| translate", function () {
-        var result = filters.matchAttribute('| translate');
+        var result = filters.matchAttribute('{{| translate}}');
+
+        assert.isUndefined(result);
+    });
+
+    it("doesn't match a string literal that looks like an expression but misses the {}", function () {
+        var result = filters.matchAttribute('"value" | translate');
 
         assert.isUndefined(result);
     });
@@ -80,11 +96,11 @@ describe("the attribute expressions matches angular-filters in attributes (witho
      * Not supported in the current version
      */
     it("doesn't match the pipe in the string value", function () {
-        var result = filters.matchAttribute('"value|test" | translate');
+        var result = filters.matchAttribute('{{"value|test" | translate}}');
 
         assert.deepEqual(result, {
             value: '"value|test"',
-            match: '"value|test" | translate',
+            match: '{{"value|test" | translate}}',
             previousFilters: undefined
         });
     });

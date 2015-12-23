@@ -1,7 +1,6 @@
 import acorn = require("acorn");
 import escodegen = require("escodegen");
 import sourceMap = require("source-map");
-import types = require("ast-types");
 import TranslateLoaderContext from "../translate-loader-context";
 import TranslateVisitor from "./translate-visitor";
 import CodeWithSourceMap = SourceMap.CodeWithSourceMap;

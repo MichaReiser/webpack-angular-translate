@@ -56,7 +56,7 @@ describe("ElementContext", function () {
 
             assert.notOk(rootContext.suppressDynamicTranslationErrors);
         });
-    })
+    });
 
     describe("asHtml", function () {
         it("shows the html for the element", function () {

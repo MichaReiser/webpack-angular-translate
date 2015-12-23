@@ -19,7 +19,6 @@ export class Translation {
      * @param usage the usages where the translation with the given id and text is used
      */
     constructor(public id: string, public defaultText: string, usage: Usage|Usage[]) {
-
         if (usage instanceof Array) {
             this.usages = usage;
         } else {

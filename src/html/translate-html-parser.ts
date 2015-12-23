@@ -13,6 +13,13 @@ function isAngularExpression(value: string): boolean {
     return angularExpressionRegex.test(value);
 }
 
+/**
+ * Visitor that implements the logic for extracting the translations.
+ * Elements with a translate directive where the content should be translated are registered in the closetag event.
+ * Translated attributes are registered in the opentag event
+ * Attributes translated with the translate filter are handled in the opentag event
+ * Expressions used in the body of an element are translated in the text event.
+ */
 export  default class TranslateHtmlParser implements htmlparser.Handler {
     context = new ElementContext(null, "root", null);
     parser: htmlparser.Parser;
