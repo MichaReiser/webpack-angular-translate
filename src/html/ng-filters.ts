@@ -3,7 +3,6 @@
  * Group 1: Value passed to the filter
  * Group 2 (optional): Filters applied before the translate filter
  */
-const attributeRegex    = /\{\{\s*("[^"]*"|'[^']*'|[^|]+)(?:\s*\|\s*(?!translate)([^|\s]+))*\s*(?:\|\s*translate)\s*(?:\s*\|\s*[^|\s]+)*\s*}}/i;
 const angularExpression = /\{\{\s*("[^"]*"|'[^']*'|[^|]+)(?:\s*\|\s*(?!translate)([^|\s]+))*\s*(?:\|\s*translate)\s*(?:\s*\|\s*[^|\s]+)*\s*}}/igm;
 
 /**
@@ -37,16 +36,16 @@ function parseMatch(match: RegExpExecArray): AngularExpressionMatch {
 
 /**
  * Matches the angular expressions from a a text. Returns a match for each expression in the
- * passed in text
- * @param html the text to search for angular expressions
+ * passed in text. Can be used to match the angular expressions inside an attribute or in the body text of an element.
+ * @param text the text to search for angular expressions
  * @returns {AngularExpressionMatch[]} an array with the found matches
  */
-export function matchAngularExpressions(html: string): AngularExpressionMatch[] {
+export function matchAngularExpressions(text: string): AngularExpressionMatch[] {
     const matches: AngularExpressionMatch[] = [];
     let match: RegExpExecArray;
 
     do {
-        match = angularExpression.exec(html);
+        match = angularExpression.exec(text);
 
         if (match) {
             matches.push(parseMatch(match));
@@ -54,18 +53,4 @@ export function matchAngularExpressions(html: string): AngularExpressionMatch[] 
     } while (match);
 
     return matches;
-}
-
-/**
- * Matches the angular expression used in an attribute text. Does
- * @param attributeText the text of the attribute
- * @returns The match of the angular expression if any.
- */
-export function matchAttribute(attributeText: string): AngularExpressionMatch {
-    const match = attributeRegex.exec(attributeText);
-
-    if (match) {
-        return parseMatch(match);
-    }
-    return undefined;
 }
