@@ -317,6 +317,20 @@ describe("StatefulHtmlParserSpecs", function () {
             }));
         });
 
+        it("extracts multiple translations from an attribute with translate filters", function () {
+            parse("<img src='xy' title=\"Fixed Text: {{ 'Waterfall' | translate }} and {{ 'Other' | translate }}\" />");
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Waterfall", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
+            }));
+
+            sinon.assert.calledWith(loaderContext.registerTranslation, new Translation("Other", undefined, {
+                resource: "test.html",
+                loc: { line: 1, column: 0 }
+            }));
+        });
+
         it("emits an error if the translate filter is not the first in the filter chain", function () {
             parse("<img src='xz' alt='{{ \"title\" | uppercase | translate }}' />");
 
