@@ -1,3 +1,7 @@
+## 0.1.3 (2016-03-05)
+
+Upgrade dependencies
+
 ## 0.1.2 (2015-12-23)
 
 Bugfixes: 
