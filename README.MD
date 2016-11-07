@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/MichaReiser/webpack-angular-translate.svg?branch=master)](https://travis-ci.org/MichaReiser/webpack-angular-translate)
 [![Coverage Status](https://coveralls.io/repos/MichaReiser/webpack-angular-translate/badge.svg?branch=master&service=github)](https://coveralls.io/github/MichaReiser/webpack-angular-translate?branch=master)
-[![Dependency Status](https://gemnasium.com/MichaReiser/webpack-angular-translate.svg)](https://gemnasium.com/MichaReiser/webpack-angular-translate)
+[![Dependency Status](https://gemnasium.com/DatenMetgzerX/webpack-angular-translate.svg)](https://gemnasium.com/DatenMetgzerX/webpack-angular-translate)
 [![npm version](https://badge.fury.io/js/webpack-angular-translate.svg)](http://badge.fury.io/js/webpack-angular-translate)
 
 This plugin extracts the translation id's and default texts from angular-translate and writes them into a separate json file. 
