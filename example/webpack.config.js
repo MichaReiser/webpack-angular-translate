@@ -8,6 +8,7 @@ module.exports = {
         path: "dist",
         filename: "[name].js"
     },
+    debug: true,
 
     module: {
         preLoaders: [
@@ -15,7 +16,7 @@ module.exports = {
                 test: /\.js$/,
                 loader: WebPackAngularTranslate.jsLoader()
             },
-			{
+			      {
                 test: /\.html$/,
                 loader: WebPackAngularTranslate.htmlLoader()
             }

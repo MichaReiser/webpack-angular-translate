@@ -15,14 +15,16 @@ export default class TranslateVisitor extends types.PathVisitor implements types
         locations: true,
         onComment: this.comments,
         onToken: this.tokens,
-        ranges: true,
-        sourceType: "module",
-        allowImportExportEverywhere: true
+        ranges: true
     };
     currentContext: types.Context;
 
-    constructor(private loader: TranslateLoaderContext) {
+    constructor(private loader: TranslateLoaderContext, options: any) {
         super();
+
+        options = options || {};
+        this.options.sourceType = options.sourceType;
+        this.options.allowImportExportEverywhere = options.allowImportExportEverywhere;
 
         // the function is called with this = Context and not the object itself
         // rebind to this and save the context in current context

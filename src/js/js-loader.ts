@@ -32,9 +32,10 @@ function jsLoader(source: string, sourceMaps: any): void {
 }
 
 function extractTranslations(loader: TranslateLoaderContext, source: string, sourceMaps: any): void {
+    const options = parseOptions(loader.version, loader.query);
     loader.pruneTranslations(loader.resource);
 
-    const visitor = new TranslateVisitor(loader);
+    const visitor = new TranslateVisitor(loader, options);
     let ast: ESTree.Node = acorn.parse(source, visitor.options);
     ast = visitor.visit(ast);
 
@@ -67,6 +68,16 @@ function extractTranslations(loader: TranslateLoaderContext, source: string, sou
 
 function isExcludedResource(resource: string): boolean {
     return /angular-translate[\/\\]dist[\/\\]angular-translate\.js$/.test(resource);
+}
+
+function parseOptions(version: number, query: any) {
+  let opts = {};
+  if (version == 1 && query) {
+    opts = JSON.parse(query.slice(1));
+  } else {
+    opts = query;
+  }
+  return opts;
 }
 
 export = jsLoader;
