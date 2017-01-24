@@ -7,7 +7,7 @@ const n = types.namedTypes;
 const b = types.builders;
 const TRANSLATE_SERVICE_NAME = "$translate";
 
-export default class TranslateVisitor extends types.PathVisitor implements  types.Visitor {
+export default class TranslateVisitor extends types.PathVisitor implements types.Visitor {
     changedAst: boolean = false;
     comments: acorn.Comment[]= [];
     tokens: acorn.Token[] = [];
@@ -15,7 +15,9 @@ export default class TranslateVisitor extends types.PathVisitor implements  type
         locations: true,
         onComment: this.comments,
         onToken: this.tokens,
-        ranges: true
+        ranges: true,
+        sourceType: "module",
+        allowImportExportEverywhere: true
     };
     currentContext: types.Context;
 

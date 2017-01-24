@@ -23,9 +23,9 @@
   "author": "Micha Reiser <micha@famreiser.ch>",
   "license": "MIT",
   "dependencies": {
-    "acorn": "^3.0.4",
-    "ast-types": "^0.8.15",
-    "cheerio": "^0.20.0",
+    "acorn": "^4.0.4",
+    "ast-types": "^0.9.4",
+    "cheerio": "^0.22.0",
     "escodegen": "^1.8.0",
     "htmlparser2": "^3.9.0",
     "loader-utils": "^0.2.12",
