@@ -2,6 +2,7 @@ import types = require("ast-types");
 import CallExpression = ESTree.CallExpression;
 import Translation from "../translation";
 import TranslateLoaderContext from "../translate-loader-context";
+const objectAssign = require("object-assign");
 
 const n = types.namedTypes;
 const b = types.builders;
@@ -19,12 +20,10 @@ export default class TranslateVisitor extends types.PathVisitor implements types
     };
     currentContext: types.Context;
 
-    constructor(private loader: TranslateLoaderContext, options: any) {
+    constructor(private loader: TranslateLoaderContext, parserOptions: any = {}) {
         super();
 
-        options = options || {};
-        this.options.sourceType = options.sourceType;
-        this.options.allowImportExportEverywhere = options.allowImportExportEverywhere;
+        this.options = objectAssign({}, this.options, parserOptions); // parserOptions will override properties on this.options
 
         // the function is called with this = Context and not the object itself
         // rebind to this and save the context in current context

@@ -285,7 +285,9 @@ describe("JSLoader", function () {
                         test: /\.js/,
                         loader: WebPackAngularTranslate.jsLoader(),
                         query: {
-                            allowImportExportEverywhere: false
+                            parserOptions: {
+                                sourceType: 'script'
+                            }
                         }
                     }
                 ]

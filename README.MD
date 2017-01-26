@@ -38,8 +38,9 @@ module: {
             test: /\.js$/,
             loader: WebPackAngularTranslate.jsLoader(),
             query: {
-                sourceType: 'script', // acorn option default
-                allowImportExportEverywhere: false // acorn option default
+                parserOptions: {
+                    sourceType: 'script' // any acorn parser option
+                }
             }
          }
     ]
@@ -57,8 +58,9 @@ module: {
             test: /\.js$/,
             loader: WebPackAngularTranslate.jsLoader(),
             options: {
-                sourceType: 'module', // acorn options required for import/export code
-                allowImportExportEverywhere: true // acorn options required for import/export code
+                parserOptions: {
+                    sourceType: 'module', // any acorn parser option
+                }
             }
          }
     ]

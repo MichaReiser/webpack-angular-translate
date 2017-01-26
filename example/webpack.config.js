@@ -14,7 +14,12 @@ module.exports = {
         preLoaders: [
             {
                 test: /\.js$/,
-                loader: WebPackAngularTranslate.jsLoader()
+                loader: WebPackAngularTranslate.jsLoader(),
+                query: {
+                    parserOptions: {
+                        sourceType: 'script' // acorn option default
+                    }
+                }
             },
 			      {
                 test: /\.html$/,
