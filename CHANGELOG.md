@@ -1,3 +1,10 @@
+## 1.0.0 (2017-01-12)
+
+- Upgrade Dependencies (@BenDiuguid)
+- Add Support for ES6 Modules (@BenDiuguid)
+- Drop Node < 4.0
+
+
 ## 0.1.3 (2016-03-05)
 
 Upgrade dependencies
