@@ -273,9 +273,9 @@ describe("JSLoader", function () {
         });
     });
 
-    it("builds successfully when specifying options with the query", function (done) {
+    it("passes the acorn parser options to acorn (in this case, allows modules)", function (done) {
         compile({
-            entry: "./test/cases/simple.js",
+            entry: "./test/cases/es-module.js",
             output: {
                 path: path.join(__dirname, "dist")
             },
@@ -286,7 +286,7 @@ describe("JSLoader", function () {
                         loader: WebPackAngularTranslate.jsLoader(),
                         query: {
                             parserOptions: {
-                                sourceType: 'script'
+                                sourceType: 'module'
                             }
                         }
                     }
