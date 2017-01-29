@@ -273,6 +273,35 @@ describe("JSLoader", function () {
         });
     });
 
+    it("builds successfully when specifying options with the query", function (done) {
+        compile({
+            entry: "./test/cases/simple.js",
+            output: {
+                path: path.join(__dirname, "dist")
+            },
+            module: {
+                preLoaders: [
+                    {
+                        test: /\.js/,
+                        loader: WebPackAngularTranslate.jsLoader(),
+                        query: {
+                            parserOptions: {
+                                sourceType: 'script'
+                            }
+                        }
+                    }
+                ]
+            },
+            plugins: [
+              new WebPackAngularTranslate.Plugin()
+            ]
+        }, function (error, stats) {
+            assert.isNull(error);
+            assert.equal(stats.compilation.errors.length, 0);
+            done();
+        });
+    });
+
     describe("$translate", function () {
 
         it("extracts the translation id when the $translate service is used as global variable ($translate)", function (done) {

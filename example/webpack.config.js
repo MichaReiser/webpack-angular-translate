@@ -8,14 +8,20 @@ module.exports = {
         path: "dist",
         filename: "[name].js"
     },
+    debug: true,
 
     module: {
         preLoaders: [
             {
                 test: /\.js$/,
-                loader: WebPackAngularTranslate.jsLoader()
+                loader: WebPackAngularTranslate.jsLoader(),
+                query: {
+                    parserOptions: {
+                        sourceType: 'script' // acorn option default
+                    }
+                }
             },
-			{
+			      {
                 test: /\.html$/,
                 loader: WebPackAngularTranslate.htmlLoader()
             }
