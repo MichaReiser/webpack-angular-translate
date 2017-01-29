@@ -38,8 +38,8 @@
     "deep-extend": "^0.4.1",
     "html-loader": "^0.4.3",
     "istanbul": "^0.4.2",
-    "memory-fs": "^0.3.0",
-    "mocha": "^2.4.5",
+    "memory-fs": "^0.4.1",
+    "mocha": "^3.2.0",
     "sinon": "^1.17.3",
     "tslint": "^3.5.0",
     "typescript": "^1.8.7"
