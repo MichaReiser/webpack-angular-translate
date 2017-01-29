@@ -4,7 +4,7 @@ import sourceMap = require("source-map");
 import TranslateLoaderContext from "../translate-loader-context";
 import TranslateVisitor from "./translate-visitor";
 import CodeWithSourceMap = SourceMap.CodeWithSourceMap;
-const loaderUtils = require("loader-utils");
+import *  as loaderUtils from "loader-utils";
 
 /**
  * Webpack loader that extracts translations from calls to the angular-translate $translate service.
@@ -33,8 +33,8 @@ function jsLoader(source: string, sourceMaps: any): void {
 }
 
 function extractTranslations(loader: TranslateLoaderContext, source: string, sourceMaps: any): void {
-    const options = parseOptions(loader.version, loader.query);
-    const parserOptions = options.parserOptions || {};
+    const options = loaderUtils.parseQuery(loader.query);
+    const parserOptions = options["parserOptions"] || {};
     
     loader.pruneTranslations(loader.resource);
 
@@ -71,16 +71,6 @@ function extractTranslations(loader: TranslateLoaderContext, source: string, sou
 
 function isExcludedResource(resource: string): boolean {
     return /angular-translate[\/\\]dist[\/\\]angular-translate\.js$/.test(resource);
-}
-
-function parseOptions(version: number, query: any): any {
-  let opts = {};
-  if (version == 1 && query) {
-    opts = loaderUtils.parseQuery(query);
-  } else {
-    opts = query;
-  }
-  return opts;
 }
 
 export = jsLoader;

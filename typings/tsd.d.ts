@@ -7,3 +7,4 @@
 /// <reference path="escodegen/escodegen.d.ts" />
 /// <reference path="htmlparser2/htmlparser2.d.ts" />
 /// <reference path="cheerio/cheerio.d.ts" />
+/// <reference path="loader-utils/loader-utils.d.ts" />

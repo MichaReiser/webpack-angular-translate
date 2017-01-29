@@ -2,7 +2,6 @@ import types = require("ast-types");
 import CallExpression = ESTree.CallExpression;
 import Translation from "../translation";
 import TranslateLoaderContext from "../translate-loader-context";
-const objectAssign = require("object-assign");
 
 const n = types.namedTypes;
 const b = types.builders;
@@ -12,18 +11,18 @@ export default class TranslateVisitor extends types.PathVisitor implements types
     changedAst: boolean = false;
     comments: acorn.Comment[]= [];
     tokens: acorn.Token[] = [];
-    options: acorn.Options = {
-        locations: true,
-        onComment: this.comments,
-        onToken: this.tokens,
-        ranges: true
-    };
+    options: acorn.Options;
     currentContext: types.Context;
 
-    constructor(private loader: TranslateLoaderContext, parserOptions: any = {}) {
+    constructor(private loader: TranslateLoaderContext, parserOptions: acorn.Options = {}) {
         super();
 
-        this.options = objectAssign({}, this.options, parserOptions); // parserOptions will override properties on this.options
+        this.options = (Object as any).assign({}, parserOptions, {
+            locations: true,
+            onComment: this.comments,
+            onToken: this.tokens,
+            ranges: true
+        });
 
         // the function is called with this = Context and not the object itself
         // rebind to this and save the context in current context
@@ -52,7 +51,7 @@ export default class TranslateVisitor extends types.PathVisitor implements types
             }
         } catch (e) {
             if (e instanceof this.AbortRequest) {
-                e.cancel();
+                (e as any).cancel();
             } else {
                 throw e;
             }
