@@ -33,9 +33,9 @@ function jsLoader(source: string, sourceMaps: any): void {
 }
 
 function extractTranslations(loader: TranslateLoaderContext, source: string, sourceMaps: any): void {
-    const options = loaderUtils.parseQuery(loader.query);
+    const options = (loaderUtils as any).getOptions(loader) || {};
     const parserOptions = options["parserOptions"] || {};
-    
+
     loader.pruneTranslations(loader.resource);
 
     const visitor = new TranslateVisitor(loader, parserOptions);
