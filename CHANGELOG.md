@@ -1,5 +1,5 @@
 ## 1.0.2 (2017-03-09)
-- Suppress Deprecation Warning #27 ([@BenDiuguid](https://github.com/BenDiuguid))
+- Suppress Deprecation Warning [#27](https://github.com/MichaReiser/webpack-angular-translate/issues/27) ([@BenDiuguid](https://github.com/BenDiuguid))
 
 ## 1.0.0 (2017-01-12)
 
