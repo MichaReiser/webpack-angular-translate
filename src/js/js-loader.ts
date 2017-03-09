@@ -7,6 +7,16 @@ import CodeWithSourceMap = SourceMap.CodeWithSourceMap;
 import *  as loaderUtils from "loader-utils";
 
 /**
+ * The optional options passed to the plugin
+ */
+interface LoaderOptions {
+    /**
+     * Optional acorn options that are passed to the parser
+     */
+    parserOptions?: acorn.Options;
+}
+
+/**
  * Webpack loader that extracts translations from calls to the angular-translate $translate service.
  * Additionally it provides the `i18n.registerTranslation(translationId, defaultText)` and `i18n.registerTranslations({})`
  * functions that can be used to register new translations directly in code.
@@ -33,9 +43,9 @@ function jsLoader(source: string, sourceMaps: any): void {
 }
 
 function extractTranslations(loader: TranslateLoaderContext, source: string, sourceMaps: any): void {
-    const options = loaderUtils.parseQuery(loader.query);
-    const parserOptions = options["parserOptions"] || {};
-    
+    const options = loaderUtils.getOptions<LoaderOptions>(loader) || {};
+    const parserOptions = options.parserOptions || {};
+
     loader.pruneTranslations(loader.resource);
 
     const visitor = new TranslateVisitor(loader, parserOptions);
