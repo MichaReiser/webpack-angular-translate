@@ -21,7 +21,7 @@ declare module webpack {
         version?: number;
         context?: string;
         request?: string;
-        query?: string;
+        query: string | { [name: string] : any };
         data?: any;
         resource?: string;
         resourcePath?: string;
