@@ -125,7 +125,7 @@ Filters in `ng-bind` and other attributes are currently not supported. In the mo
 
 ### Service
 The `$translate` service is supported for literals only. No dynamic translations are supported. It's required
-that the `$translate` service is always called `$translate`. `$translate.instant` is not supported.
+that the `$translate` service is always called `$translate`.
 
 The following examples are supported:
 
@@ -134,6 +134,9 @@ $translate('Login');
 
 this.$translate('Login');
 _this.$translate('Login'); // also other names then _this
+
+$translate.instant('Login');
+this.$translate.instant('Login');
 
 $translate('Login', ..., ..., 'Anmelden');
 ```

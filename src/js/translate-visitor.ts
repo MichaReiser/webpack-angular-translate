@@ -46,6 +46,8 @@ export default class TranslateVisitor extends types.PathVisitor implements types
                 this.visitRegisterTranslation(path);
             } else if (functionName === "registerTranslations" && calleeName === "i18n") {
                 this.visitRegisterTranslations(path);
+            } else if (functionName === "instant" && calleeName === TRANSLATE_SERVICE_NAME) {
+                this.visitTranslate(path);
             } else {
                 this.currentContext.traverse(path);
             }
@@ -227,6 +229,11 @@ export default class TranslateVisitor extends types.PathVisitor implements types
                 return (<ESTree.Identifier>member.object).name;
             } else if (member.object.type === "ThisExpression") {
                 return "this";
+            } else if (member.object.type == "MemberExpression") {
+                const parent = <ESTree.MemberExpression> member.object;
+                if (parent.property.type === "Identifier") {
+                    return (<ESTree.Identifier>parent.property).name;
+                }
             }
         }
 

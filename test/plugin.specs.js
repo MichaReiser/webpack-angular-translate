@@ -335,6 +335,14 @@ describe("JSLoader", function () {
             });
         });
 
+        it("extracts instant translation id", function (done) {
+            translationsTest('instant.js', done, function (translations) {
+                assert.propertyVal(translations, 'FIRST_TRANSLATION', 'FIRST_TRANSLATION');
+                assert.propertyVal(translations, 'SECOND_TRANSLATION', 'SECOND_TRANSLATION');
+                assert.notProperty(translations, 'SKIPPED_TRANSLATION');
+            });
+        });
+
         it("extracts the default text", function (done) {
             translationsTest('defaultText.js', done, function (translations) {
                 assert.propertyVal(translations, 'Next', 'Weiter');
