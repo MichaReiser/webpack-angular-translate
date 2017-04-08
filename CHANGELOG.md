@@ -1,3 +1,6 @@
+## 2.0.0 (2017-04-08)
+- Added support for $translate.instant ([@setor](https://github.com/setor). This might lead to new warnings in case dynamic translation keys are used.
+
 ## 1.0.2 (2017-03-09)
 - Suppress Deprecation Warning [#27](https://github.com/MichaReiser/webpack-angular-translate/issues/27) ([@BenDiuguid](https://github.com/BenDiuguid))
 
