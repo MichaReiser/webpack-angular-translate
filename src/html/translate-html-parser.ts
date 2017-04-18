@@ -70,7 +70,7 @@ export  default class TranslateHtmlParser implements htmlparser.Handler {
                 translatedAttributeName = attributeName.substr("translate-attr-".length),
                 defaultText = attributes["translate-default-attr-" + translatedAttributeName];
 
-            this.registerTranslation(translationId, defaultText);
+            this.registerTranslation(translationId, attributes["translate-default"] || defaultText);
         });
 
         this.context.defaultText = attributes["translate-default"];
