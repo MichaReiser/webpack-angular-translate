@@ -29,7 +29,7 @@
     "escodegen": "^1.11.0",
     "htmlparser2": "^3.10.0",
     "loader-utils": "^1.0.3",
-    "source-map": "^0.5.3",
+    "source-map": "^0.7.3",
     "webpack": "^1.12.14"
   },
   "devDependencies": {
