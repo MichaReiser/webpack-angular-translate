@@ -6,7 +6,7 @@
     "noImplicitAny": true,
     "outDir": "dist",
     "moduleResolution": "node",
-    "lib": ["es2015", "dom"]
+    "lib": ["es2015"]
   },
   "files": [
     "src/index.ts",
