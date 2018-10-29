@@ -33,15 +33,15 @@
     "webpack": "^1.12.14"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "coveralls": "^2.11.8",
-    "deep-extend": "^0.4.1",
-    "html-loader": "^0.4.3",
+    "chai": "^4.2.0",
+    "coveralls": "^3.0.2",
+    "deep-extend": "^0.6.0",
+    "html-loader": "^0.5.5",
     "istanbul": "^0.4.2",
     "memory-fs": "^0.4.1",
-    "mocha": "^3.2.0",
-    "sinon": "^1.17.3",
-    "tslint": "^3.5.0",
-    "typescript": "^1.8.7"
+    "mocha": "^5.2.0",
+    "sinon": "^7.1.0",
+    "tslint": "^5.11.0",
+    "typescript": "^3.1.3"
   }
 }
