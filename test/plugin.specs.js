@@ -1,6 +1,5 @@
 var assert = require("chai").assert,
   webpack = require("webpack"),
-  NodeWatchFileSystem = require("webpack/lib/node/NodeWatchFileSystem.js"),
   deepExtend = require("deep-extend"),
   WebPackAngularTranslate = require("../dist/index.js"),
   MemoryFS = require("memory-fs"),
@@ -634,6 +633,7 @@ describe("Plugin", function() {
       assert.notOk(error, "Failed to compile the assets");
 
       if (firstRun) {
+        console.log("First run");
         assert.deepEqual(
           stats.compilation.errors,
           [],
@@ -674,7 +674,13 @@ describe("Plugin", function() {
           "The property is not used by fileChange.js anymore, so we should remove it from the translations.json"
         );
 
-        watching.close(done);
+        // Immediately closing the watching results in a haning webpack instance
+        // delay the closing till the next tick
+        Promise.resolve().then(() => {
+          watching.close(() => {
+            done();
+          });
+        });
       }
     });
   });
