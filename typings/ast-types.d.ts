@@ -1,9 +1,11 @@
-declare namespace AstTypes {
-  interface Type {
+declare module "ast-types" {
+  import * as ESTree from "estree";
+
+  export interface Type {
     check(node: ESTree.Node): boolean;
   }
 
-  interface NamedTypes {
+  export interface NamedTypes {
     Identifier: Type;
     Literal: Type;
     ArrayExpression: Type;
@@ -14,7 +16,7 @@ declare namespace AstTypes {
     Program: Type;
   }
 
-  interface Builders {
+  export interface Builders {
     identifier(name: string): ESTree.Identifier;
     literal(name: string): ESTree.Literal;
     arrayExpression(
@@ -22,7 +24,7 @@ declare namespace AstTypes {
     ): ESTree.ArrayExpression;
   }
 
-  interface NodePath<N extends ESTree.Node> {
+  export interface NodePath<N extends ESTree.Node> {
     node: N;
     parent: NodePath<any>;
     parentPath: NodePath<any>;
@@ -31,26 +33,22 @@ declare namespace AstTypes {
     prune(): void;
   }
 
-  interface Context {
+  export interface Context {
     reset(): void;
     traverse<N extends ESTree.Node>(path: NodePath<N>): void;
   }
 
-  class PathVisitor {
+  export class PathVisitor {
     AbortRequest: typeof Error;
     abort(): void;
     visit(ast: ESTree.Node): ESTree.Node;
   }
 
-  interface Visitor {
+  export interface Visitor {
     visitCallExpression?: (path: NodePath<ESTree.CallExpression>) => boolean;
   }
 
-  var namedTypes: NamedTypes;
-  var builders: Builders;
-  function visit(ast: ESTree.Program, visitor: Visitor): void;
-}
-
-declare module "ast-types" {
-  export = AstTypes;
+  export var namedTypes: NamedTypes;
+  export var builders: Builders;
+  export function visit(ast: ESTree.Program, visitor: Visitor): void;
 }

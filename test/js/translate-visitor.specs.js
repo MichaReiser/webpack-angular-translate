@@ -160,7 +160,12 @@ describe("TranslateVisitor", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Illegal argument for call to $translate: A call to $translate requires at least one argument that is the translation id. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
+        sinon.match
+          .has(
+            "message",
+            "Illegal argument for call to $translate: A call to $translate requires at least one argument that is the translation id. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
+          )
+          .and(sinon.match.instanceOf(Error))
       );
     });
 
@@ -173,7 +178,12 @@ describe("TranslateVisitor", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Illegal argument for call to $translate: The translation id should either be a string literal or an array containing string literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
+        sinon.match
+          .has(
+            "message",
+            "Illegal argument for call to $translate: The translation id should either be a string literal or an array containing string literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
+          )
+          .and(sinon.match.instanceOf(Error))
       );
     });
 
@@ -188,7 +198,12 @@ describe("TranslateVisitor", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Illegal argument for call to $translate: The array with the translation ids should only contain literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:0)."
+        sinon.match
+          .has(
+            "message",
+            "Illegal argument for call to $translate: The array with the translation ids should only contain literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:0)."
+          )
+          .and(sinon.match.instanceOf(Error))
       );
     });
 
@@ -206,7 +221,12 @@ describe("TranslateVisitor", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Illegal argument for call to $translate: The default text should be a string literal. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
+        sinon.match
+          .has(
+            "message",
+            "Illegal argument for call to $translate: The default text should be a string literal. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
+          )
+          .and(sinon.match.instanceOf(Error))
       );
     });
 
@@ -379,7 +399,12 @@ describe("TranslateVisitor", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (test.js:1:1)."
+        sinon.match
+          .has(
+            "message",
+            "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (test.js:1:1)."
+          )
+          .and(sinon.match.instanceOf(Error))
       );
     });
 
@@ -394,7 +419,13 @@ describe("TranslateVisitor", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (test.js:1:1)."
+        sinon.match
+          .has(
+            "message",
+
+            "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (test.js:1:1)."
+          )
+          .and(sinon.match.instanceOf(Error))
       );
     });
 
@@ -410,7 +441,12 @@ describe("TranslateVisitor", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Illegal argument for call to i18n.registerTranslation: the default text has to be a literal (test.js:1:1)."
+        sinon.match
+          .has(
+            "message",
+            "Illegal argument for call to i18n.registerTranslation: the default text has to be a literal (test.js:1:1)."
+          )
+          .and(sinon.match.instanceOf(Error))
       );
     });
   });
