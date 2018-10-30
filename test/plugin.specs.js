@@ -22,12 +22,6 @@ function compileAndGetTranslations(fileName) {
   return compile(options).then(({ error, stats, volume }) => {
     assert.notOk(error, JSON.stringify(error));
 
-    if (stats.compilation.errors) {
-      stats.compilation.errors.forEach(function(error) {
-        console.warn(error.message);
-      });
-    }
-
     var translations = {};
     if (stats.compilation.assets["translations.json"]) {
       translations = JSON.parse(
