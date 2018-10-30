@@ -23,60 +23,47 @@ Configure the loader and the plugin in the webpack configuration.
 
 ```js
 var WebPackAngularTranslate = require("webpack-angular-translate");
-
-// webpack v1
-module: {
-    preLoaders: [
-        {
-            test: /\.html$/,
-            loader: WebPackAngularTranslate.htmlLoader()
-        }
-    ],
-
-    loaders: [
-        {
-            test: /\.js$/,
-            loader: WebPackAngularTranslate.jsLoader(),
-            query: {
-                parserOptions: {
-                    sourceType: 'script' // any acorn parser option
-                }
-            }
-         }
-    ]
-},
-
-// webpack v2
-module: {
+{
+  ...
+  module: {
     rules: [
-        {
-            enforce: 'pre'
-            test: /\.html$/,
-            loader: WebPackAngularTranslate.htmlLoader()
-        },
-        {
-            test: /\.js$/,
-            loader: WebPackAngularTranslate.jsLoader(),
+      {
+        test: /\.html$/,
+        use: [
+          {
+            loader: "html-loader",
             options: {
-                parserOptions: {
-                    sourceType: 'module', // any acorn parser option
-                }
+              removeEmptyAttributes: false,
+              attrs: []
             }
-         }
+          },
+          {
+            loader: WebPackAngularTranslate.htmlLoader()
+          }
+        ]
+      },
+      {
+        test: /\.js/,
+        loader: WebPackAngularTranslate.jsLoader(),
+        options: {
+          parserOptions: {
+            sourceType: "module"
+          }
+        }
+      }
     ]
-},
+  },
 
-plugins: [
-    new WebPackAngularTranslate.Plugin()
-]
+  plugins: [new WebPackAngularTranslate.Plugin()]
+}
 ```
 
-The htmlLoader should be used as pre loader as it expects html as input (and not html embedded into js, what is the result of the *html-loader*).
+The htmlLoader should be used as pre loader as it expects html as input (and not html embedded into js, what is the result of the _html-loader_).
 The javascriptLoader can be used like any other loader (pre / post or normal loader). The loader requires that the input is valid javascript. It's possible to only use the javascript or the html loader. It's advised to only apply the loader to relevant files, as it requires an additional parsing step, which has an effect on the build performance.
 
 The plugin accepts the following options in the constructor:
 
-* fileName: The name of the file that contains all the translations, default `translations.json`
+- fileName: The name of the file that contains all the translations, default `translations.json`
 
 The loaders accepts the name of a loader that should be applied in advance. E.g. the js loader can be applied to the result of the typescript loader:
 
@@ -87,11 +74,10 @@ The loaders accepts the name of a loader that should be applied in advance. E.g.
 }
 ```
 
-
-
 ## Supported Expressions
 
 ### Directive
+
 The directive is supported for static translations. Dynamic translations are not supported.
 
 ```html
@@ -108,9 +94,9 @@ The directive is supported for static translations. Dynamic translations are not
 <a translate translate-attr-title="TITLE-ID" translate-default-attr-title="Default for title attr" href="#"><i class="fa-home fa" /></a>
 ```
 
-
 ### Filter
-Filters in Angular-Expression statements are supported when the value, to which the filter is applied to,  is a literal and no other filter is applied before the `translate` filter.
+
+Filters in Angular-Expression statements are supported when the value, to which the filter is applied to, is a literal and no other filter is applied before the `translate` filter.
 The following examples are supported:
 
 ```html
@@ -122,8 +108,8 @@ The following examples are supported:
 
 Filters in `ng-bind` and other attributes are currently not supported. In the most scenarios `ng-bind` can be replaced with the `translate` directive or a filter can be applied directly.
 
-
 ### Service
+
 The `$translate` service is supported for literals only. No dynamic translations are supported. It's required
 that the `$translate` service is always called `$translate`.
 
@@ -146,9 +132,9 @@ to the console. The error is emitted to remind the developer that he is responsi
 If the dynamic translations have been registered, then the error can be suppressed using a `/* suppress-dynamic-translation-error: true */`
 comment in the block of the `$translate` call. This will suppress all errors for the current block.
 
-
 ## Register dynamic translations
-If a dynamic translation is used, then the translation needs to be registered. To do so, the `i18n.registerTranslations({ translationId: defaultText })` function can be used. This might be helpful if the translation id is dynamically composed from a value of a domain object but the set of all possible combinations is limited.  The registered translations are merged into the outputted json file. The function calls will be replaced by `(0);`. If UglifyJS is used for minification, then those calls will be removed entirely.
+
+If a dynamic translation is used, then the translation needs to be registered. To do so, the `i18n.registerTranslations({ translationId: defaultText })` function can be used. This might be helpful if the translation id is dynamically composed from a value of a domain object but the set of all possible combinations is limited. The registered translations are merged into the outputted json file. The function calls will be replaced by `(0);`. If UglifyJS is used for minification, then those calls will be removed entirely.
 
 An alternative is `i18n.registerTranslation(translationId, defaultText?)`. This function is intended to be used when the translation id's are known in the javascript code but not known in the html file. Following an example where the title is dynamically set, depending if it is a new item or an existing one:
 
@@ -158,17 +144,18 @@ An alternative is `i18n.registerTranslation(translationId, defaultText?)`. This 
 
 The controller defines the id of the translation to use:
 
- ```js
- function EditController(user) {
- 	// compiles to this.title = user.isNew() ? "NEW_USER" : "EDIT_USER";
-   	this.title = user.isNew() ? i18n.registerTranslation("NEW_USER", "New user") : i18n.registerTranslation("EDIT_USER", "Edit user");
+```js
+function EditController(user) {
+  // compiles to this.title = user.isNew() ? "NEW_USER" : "EDIT_USER";
+  this.title = user.isNew()
+    ? i18n.registerTranslation("NEW_USER", "New user")
+    : i18n.registerTranslation("EDIT_USER", "Edit user");
 }
- ```
+```
 
- The call to `i18n.registerTranslation` registers the translation id with the default text (optional). The result of the function is the id of the translation to use. This makes it possible to register translations inplace. Calls to `i18n.registerTranslation` compile to the passed in translation id (the function is not evaluated at runtime).
+The call to `i18n.registerTranslation` registers the translation id with the default text (optional). The result of the function is the id of the translation to use. This makes it possible to register translations inplace. Calls to `i18n.registerTranslation` compile to the passed in translation id (the function is not evaluated at runtime).
 
- The `suppress-dynamic-translation-error` attribute can be defined on any element and will suppress any errors from the plugin  for the attributed element and all it's child elements. This attribute is removed for non debugging builds.
-
+The `suppress-dynamic-translation-error` attribute can be defined on any element and will suppress any errors from the plugin for the attributed element and all it's child elements. This attribute is removed for non debugging builds.
 
 ## API
 
