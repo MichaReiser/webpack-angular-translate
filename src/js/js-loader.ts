@@ -1,19 +1,19 @@
-import acorn = require("acorn");
-import escodegen = require("escodegen");
-import sourceMap = require("source-map");
+import * as escodegen from "escodegen";
+import * as acorn from "acorn";
+import * as ESTree from "estree";
+import { CodeWithSourceMap, SourceMapConsumer } from "source-map";
 import TranslateLoaderContext from "../translate-loader-context";
 import TranslateVisitor from "./translate-visitor";
-import CodeWithSourceMap = SourceMap.CodeWithSourceMap;
-import *  as loaderUtils from "loader-utils";
+import * as loaderUtils from "loader-utils";
 
 /**
  * The optional options passed to the plugin
  */
 interface LoaderOptions {
-    /**
-     * Optional acorn options that are passed to the parser
-     */
-    parserOptions?: acorn.Options;
+  /**
+   * Optional acorn options that are passed to the parser
+   */
+  parserOptions?: acorn.Options;
 }
 
 /**
@@ -23,64 +23,87 @@ interface LoaderOptions {
  *
  * The loader uses acorn to parse the input file and creates the output javascript using escodegen.
  * @param source
- * @param sourceMaps
+ * @param inputSourceMaps
  */
-function jsLoader(source: string, sourceMaps: any): void {
-    const loader: TranslateLoaderContext = this;
-    if (!loader.registerTranslation) {
-        return this.callback(new Error("The WebpackAngularTranslate plugin is missing. Add the plugin to your webpack configurations 'plugins' section."), source, sourceMaps);
-    }
+async function jsLoader(source: string, inputSourceMaps: any) {
+  const loader: TranslateLoaderContext = this;
+  const callback = this.async();
 
-    if (loader.cacheable) {
-        loader.cacheable();
-    }
+  if (!loader.registerTranslation) {
+    return callback(
+      new Error(
+        "The WebpackAngularTranslate plugin is missing. Add the plugin to your webpack configurations 'plugins' section."
+      ),
+      source,
+      inputSourceMaps
+    );
+  }
 
-    if (isExcludedResource(loader.resourcePath)) {
-        return this.callback(null, source, sourceMaps);
-    }
+  if (loader.cacheable) {
+    loader.cacheable();
+  }
 
-    extractTranslations(loader, source, sourceMaps);
+  if (isExcludedResource(loader.resourcePath)) {
+    return callback(null, source, inputSourceMaps);
+  }
+
+  const { code, sourceMaps } = await extractTranslations(
+    loader,
+    source,
+    inputSourceMaps
+  );
+
+  callback(null, code, sourceMaps);
 }
 
-function extractTranslations(loader: TranslateLoaderContext, source: string, sourceMaps: any): void {
-    const options = loaderUtils.getOptions<LoaderOptions>(loader) || {};
-    const parserOptions = options.parserOptions || {};
+async function extractTranslations(
+  loader: TranslateLoaderContext,
+  source: string,
+  sourceMaps: any
+) {
+  const options = loaderUtils.getOptions(loader) || {};
+  const parserOptions = options.parserOptions || {};
 
-    loader.pruneTranslations(loader.resource);
+  loader.pruneTranslations(loader.resource);
 
-    const visitor = new TranslateVisitor(loader, parserOptions);
-    let ast: ESTree.Node = acorn.parse(source, visitor.options);
-    ast = visitor.visit(ast);
+  const visitor = new TranslateVisitor(loader, parserOptions);
+  const sourceAst = acorn.parse(source, visitor.options);
+  const transformedAst = visitor.visit(sourceAst as ESTree.Node);
 
-    let code = source;
+  let code = source;
 
-    if (visitor.changedAst) {
-        const generateSourceMaps = !!(loader.sourceMap || sourceMaps);
-        const result = escodegen.generate(ast, {
-            comment: true,
-            sourceMap: generateSourceMaps ? loader.resourcePath : undefined,
-            sourceMapWithCode: generateSourceMaps,
-            sourceContent: generateSourceMaps ? source : undefined
-        });
+  if (visitor.changedAst) {
+    const generateSourceMaps = !!(loader.sourceMap || sourceMaps);
+    const result = escodegen.generate(transformedAst, {
+      comment: true,
+      sourceMap: generateSourceMaps ? loader.resourcePath : undefined,
+      sourceMapWithCode: generateSourceMaps,
+      sourceContent: generateSourceMaps ? source : undefined
+    });
 
-        if (generateSourceMaps) {
-            const codeWithSourceMap = <CodeWithSourceMap> result;
-            code = codeWithSourceMap.code;
-            if (sourceMaps) {
-                // Create a new source maps that is a mapping from original Source -> result from previous loader -> result from this loader
-                var originalSourceMap = new sourceMap.SourceMapConsumer(sourceMaps);
-                codeWithSourceMap.map.applySourceMap(originalSourceMap, loader.resourcePath);
-            }
+    if (generateSourceMaps) {
+      const codeWithSourceMap = <CodeWithSourceMap>(result as any);
+      code = codeWithSourceMap.code;
+      if (sourceMaps) {
+        // Create a new source maps that is a mapping from original Source -> result from previous loader -> result from this loader
+        const originalSourceMap = await new SourceMapConsumer(sourceMaps);
+        codeWithSourceMap.map.applySourceMap(
+          originalSourceMap,
+          loader.resourcePath
+        );
+      }
 
-            sourceMaps = (<any>codeWithSourceMap.map).toJSON();
-        }
+      sourceMaps = (<any>codeWithSourceMap.map).toJSON();
     }
+  }
 
-    loader.callback(null, code, sourceMaps);
+  return { code, sourceMaps };
 }
 
 function isExcludedResource(resource: string): boolean {
-    return /angular-translate[\/\\]dist[\/\\]angular-translate\.js$/.test(resource);
+  return /angular-translate[\/\\]dist[\/\\]angular-translate\.js$/.test(
+    resource
+  );
 }
 
 export = jsLoader;

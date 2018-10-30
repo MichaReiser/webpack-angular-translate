@@ -1,6 +1,5 @@
-const RawSource = require("webpack/lib/RawSource"),
-  extend = require("util")._extend;
-import { Plugin, Compiler, Compilation } from "webpack";
+import { RawSource } from "webpack-sources";
+import { Plugin, Compiler, compilation } from "webpack";
 
 import Translation from "./translation";
 import TranslationsRegistry, {
@@ -23,12 +22,11 @@ interface TranslateOptions {
  */
 export class AngularTranslatePlugin implements Plugin {
   private options: TranslateOptions;
-  private compiler: Compiler;
-  private compilation: Compilation;
+  private compilation: compilation.Compilation;
   private translationsRegistry = new TranslationsRegistry();
 
   constructor(options: TranslateOptions) {
-    this.options = extend({ fileName: "translations.json" }, options);
+    this.options = { fileName: "translations.json", ...options };
   }
 
   /**
@@ -36,17 +34,15 @@ export class AngularTranslatePlugin implements Plugin {
    * @param compiler
    */
   apply(compiler: Compiler) {
-    this.compiler = compiler;
-
-    compiler.plugin("compilation", (compilation: Compilation) => {
+    compiler.hooks.compilation.tap("webpack-angular-translate", compilation => {
       this.compilation = compilation;
       /**
        * Register the plugin to the normal-module-loader and expose the registerTranslation function in the loaderContext.
        * This way the loader can communicate with the plugin and pass the translations to the plugin.
        */
-      compilation.plugin(
-        "normal-module-loader",
-        (loaderContext: TranslateLoaderContext) => {
+      compilation.hooks.normalModuleLoader.tap(
+        "webpack-angular-translate",
+        loaderContext => {
           loaderContext.registerTranslation = this.registerTranslation.bind(
             this
           );
@@ -57,7 +53,10 @@ export class AngularTranslatePlugin implements Plugin {
       );
     });
 
-    compiler.plugin("emit", this.emitResult.bind(this));
+    compiler.hooks.emit.tap(
+      "webpack-angular-translate",
+      this.emitResult.bind(this)
+    );
   }
 
   /**
@@ -78,19 +77,14 @@ export class AngularTranslatePlugin implements Plugin {
     }
   }
 
-  emitResult(compilation: Compilation, callback: () => void) {
+  emitResult(compilation: compilation.Compilation) {
     // Only create the file if it is not empty.
     // Fixes an issue with karma-webpack where the build fails when the asset is emitted.
     if (!this.translationsRegistry.empty) {
       const translations = this.translationsRegistry.toJSON();
       var content = JSON.stringify(translations, null, "\t");
-      compilation.assets[this.options.fileName] = new RawSource(
-        content,
-        this.options.fileName
-      );
+      compilation.assets[this.options.fileName] = new RawSource(content);
     }
-
-    callback();
   }
 }
 

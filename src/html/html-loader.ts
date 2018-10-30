@@ -1,7 +1,9 @@
-import cheerio = require('cheerio');
+import cheerio = require("cheerio");
 
 import TranslateLoaderContext from "../translate-loader-context";
-import StatefulHtmlParser, { SUPPRESS_ATTRIBUTE_NAME} from "./translate-html-parser";
+import StatefulHtmlParser, {
+  SUPPRESS_ATTRIBUTE_NAME
+} from "./translate-html-parser";
 
 /**
  * Loader that must be used together with the plugin. The loader parses the html content and extracts all
@@ -34,40 +36,45 @@ import StatefulHtmlParser, { SUPPRESS_ATTRIBUTE_NAME} from "./translate-html-par
  * @param source the content of the file (expected to be html or xml)
  * @param sourceMaps the source maps
  */
-function loader(source: string, sourceMaps: any): void|string {
-    "use strict";
+function loader(source: string, sourceMaps: any): void | string {
+  "use strict";
 
-    const loader: TranslateLoaderContext = this;
-    if (!loader.registerTranslation) {
-        return this.callback(new Error("The WebpackAngularTranslate plugin is missing. Add the plugin to your webpack configurations 'plugins' section."), source, sourceMaps);
-    }
+  const loader: TranslateLoaderContext = this;
+  if (!loader.registerTranslation) {
+    return this.callback(
+      new Error(
+        "The WebpackAngularTranslate plugin is missing. Add the plugin to your webpack configurations 'plugins' section."
+      ),
+      source,
+      sourceMaps
+    );
+  }
 
-    if (loader.cacheable) {
-        loader.cacheable();
-    }
+  if (this.cacheable) {
+    this.cacheable();
+  }
 
-    loader.pruneTranslations(loader.resource);
+  loader.pruneTranslations(loader.resource);
 
-    new StatefulHtmlParser(loader).parse(source);
+  new StatefulHtmlParser(loader).parse(source);
 
-    let result = source;
-    if (!loader.options.debug) {
-        result = removeSuppressTranslationErrorAttributes(source);
-    }
+  let result = source;
+  if (!this.debug) {
+    result = removeSuppressTranslationErrorAttributes(source);
+  }
 
-    loader.callback(null, result, sourceMaps);
+  this.callback(null, result, sourceMaps);
 }
 
 function removeSuppressTranslationErrorAttributes(source: string): string {
-    const $ = cheerio.load(source);
-    const elementsWithSuppressAttribute = $(`[${SUPPRESS_ATTRIBUTE_NAME}]`);
-    if (elementsWithSuppressAttribute.length === 0) {
-        return source;
-    }
+  const $ = cheerio.load(source);
+  const elementsWithSuppressAttribute = $(`[${SUPPRESS_ATTRIBUTE_NAME}]`);
+  if (elementsWithSuppressAttribute.length === 0) {
+    return source;
+  }
 
-    elementsWithSuppressAttribute.removeAttr(SUPPRESS_ATTRIBUTE_NAME);
-    return $.html();
+  elementsWithSuppressAttribute.removeAttr(SUPPRESS_ATTRIBUTE_NAME);
+  return $.html();
 }
-
 
 export = loader;
