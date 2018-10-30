@@ -3,5 +3,6 @@ node_modules/
 coverage
 test/dist
 example/dist
+example/node_modules
 dist
 npm-debug.log
