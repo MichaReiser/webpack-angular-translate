@@ -16,13 +16,6 @@
     "coverage": "node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha './test/**/*.specs.js'",
     "coveralljs": "npm run coverage && cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js && rm -rf coverage"
   },
-  "files": [
-    "src",
-    "dist",
-    "LICENSE",
-    "example",
-    "i18n.d.ts"
-  ],
   "author": "Micha Reiser <micha@famreiser.ch>",
   "license": "MIT",
   "dependencies": {
