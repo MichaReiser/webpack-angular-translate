@@ -14,23 +14,22 @@ const fs = require("fs");
  * @param assertCallback {function({}, {})} Callback that contains the assert statements. the first argument
  * is the source of the translations file. The webpack stats (containing warnings and errors) is passed as second argument.
  */
-function compileAndGetTranslations(fileName) {
+async function compileAndGetTranslations(fileName) {
   var options = webpackOptions({
     entry: ["./test/cases/" + fileName]
   });
 
-  return compile(options).then(({ error, stats, volume }) => {
-    assert.notOk(error, JSON.stringify(error));
+  const { error, stats, volume } = await compile(options);
+  assert.notOk(error, JSON.stringify(error));
 
-    var translations = {};
-    if (stats.compilation.assets["translations.json"]) {
-      translations = JSON.parse(
-        volume.toJSON(__dirname, undefined, true)["dist/translations.json"]
-      );
-    }
+  var translations = {};
+  if (stats.compilation.assets["translations.json"]) {
+    translations = JSON.parse(
+      volume.toJSON(__dirname, undefined, true)["dist/translations.json"]
+    );
+  }
 
-    return { translations, stats };
-  });
+  return { translations, stats };
 }
 
 function webpackOptions(options) {

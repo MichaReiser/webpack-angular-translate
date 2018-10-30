@@ -1,41 +1,41 @@
-var webpack = require("webpack"),
-    WebPackAngularTranslate = require("webpack-angular-translate");
-
+const WebPackAngularTranslate = require("../");
+const path = require("path");
 
 module.exports = {
-    entry: './app.js',
-    output: {
-        path: "dist",
-        filename: "[name].js"
-    },
-    debug: true,
-
-    module: {
-        preLoaders: [
-            {
-                test: /\.js$/,
-                loader: WebPackAngularTranslate.jsLoader(),
-                query: {
-                    parserOptions: {
-                        sourceType: 'script' // acorn option default
-                    }
-                }
-            },
-			      {
-                test: /\.html$/,
-                loader: WebPackAngularTranslate.htmlLoader()
+  entry: "./app.js",
+  output: {
+    path: path.join(__dirname, "dist"),
+    filename: "[name].js"
+  },
+  mode: "development",
+  module: {
+    rules: [
+      {
+        test: /\.html$/,
+        use: [
+          {
+            loader: "html-loader",
+            options: {
+              removeEmptyAttributes: false,
+              attrs: []
             }
-        ],
-
-        loaders: [
-            {
-                test: /\.html$/,
-                loader: 'html?removeEmptyAttributes=false&collapseWhitespace=false'
-            }
+          },
+          {
+            loader: WebPackAngularTranslate.htmlLoader()
+          }
         ]
-    },
-
-    plugins: [
-        new WebPackAngularTranslate.Plugin()
+      },
+      {
+        test: /\.js/,
+        loader: WebPackAngularTranslate.jsLoader(),
+        options: {
+          parserOptions: {
+            sourceType: "module"
+          }
+        }
+      }
     ]
+  },
+
+  plugins: [new WebPackAngularTranslate.Plugin()]
 };

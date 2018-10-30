@@ -50,8 +50,8 @@ function loader(source: string, sourceMaps: any): void | string {
     );
   }
 
-  if (loader.cacheable) {
-    loader.cacheable();
+  if (this.cacheable) {
+    this.cacheable();
   }
 
   loader.pruneTranslations(loader.resource);
@@ -59,11 +59,11 @@ function loader(source: string, sourceMaps: any): void | string {
   new StatefulHtmlParser(loader).parse(source);
 
   let result = source;
-  if (!loader.debug) {
+  if (!this.debug) {
     result = removeSuppressTranslationErrorAttributes(source);
   }
 
-  loader.callback(null, result, sourceMaps);
+  this.callback(null, result, sourceMaps);
 }
 
 function removeSuppressTranslationErrorAttributes(source: string): string {
