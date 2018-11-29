@@ -282,7 +282,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Failed to extract the angular-translate translations from test.html:2:5: the element uses the translate directive but does not specify a translation id nor has any translated attributes (translate-attr-*). Specify a translation id or remove the translate-directive."
+        "Failed to extract the angular-translate translations from test.html:1:0: the element uses the translate directive but does not specify a translation id nor has any translated attributes (translate-attr-*). Specify a translation id or remove the translate-directive."
       );
       // ensure the translation is not registered a second time because of a test if scope.text is falsy (what is the case above).
       assert.notOk(loaderContext.registerTranslation.called);

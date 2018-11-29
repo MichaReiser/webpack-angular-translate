@@ -1,39 +1,49 @@
 var assert = require("chai").assert;
-var ElementContext = require("../../dist/html/element-context").default;
+var RootContext = require("../../dist/html/element-context").RootContext;
 
 describe("ElementContext", function() {
   "use strict";
 
-  let rootContext;
-
-  beforeEach(function() {
-    rootContext = new ElementContext(null, "root", null);
-  });
-
   describe("enter", function() {
+    let rootContext;
+
+    beforeEach(function() {
+      rootContext = new RootContext("test.html", `<body class="test"></body>`);
+    });
+
     it("sets the parent element correctly", function() {
-      var child = rootContext.enter("body", { class: "test" });
+      var child = rootContext.enter("body", [{ name: "class", value: "test" }]);
 
       assert.equal(child.parent, rootContext);
     });
 
     it("sets the element name and attributes correctly", function() {
-      var child = rootContext.enter("body", { class: "test" });
+      var child = rootContext.enter("body", [{ name: "class", value: "test" }]);
 
-      assert.equal(child.elementName, "body");
-      assert.deepEqual(child.attributes, { class: "test" });
+      assert.equal(child.tagName, "body");
+      assert.deepEqual(child.attributes, [{ name: "class", value: "test" }]);
     });
   });
 
   describe("leave", function() {
     it("returns the previous / parent element", function() {
-      var child = rootContext.enter("body", { class: "test" });
+      const rootContext = new RootContext(
+        "test.html",
+        `<body class="test"></body>`
+      );
+      var child = rootContext.enter("body", [{ name: "class", value: "test" }]);
 
       assert.equal(child.leave(), rootContext);
     });
   });
 
   describe("suppressDynamicTranslationErrors", function() {
+    let rootContext;
+
+    beforeEach(function() {
+      rootContext = new RootContext("test.html", `<body class="test"></body>`);
+    });
+
     it("is false by default", function() {
       assert.notOk(rootContext.suppressDynamicTranslationErrors);
     });
@@ -60,13 +70,17 @@ describe("ElementContext", function() {
 
   describe("asHtml", function() {
     it("shows the html for the element", function() {
-      var body = rootContext.enter("body");
+      var body = new RootContext("test.html", "<body></body>").enter("body");
 
       assert.equal(body.asHtml(), "<body>...</body>");
     });
 
     it("displays the text content of the element", function() {
-      var body = rootContext.enter("body");
+      var body = new RootContext(
+        "test.html",
+        "<body>Hello World\n</body>"
+      ).enter("body");
+
       body.addText({
         raw: "Hello World\n",
         text: "Hello World"
@@ -76,7 +90,10 @@ describe("ElementContext", function() {
     });
 
     it("adds the attributes to the element", function() {
-      var body = rootContext.enter("body", [
+      var body = new RootContext(
+        "test.html",
+        `<body class="test" id="main"></body>`
+      ).enter("body", [
         {
           name: "class",
           expressions: [],

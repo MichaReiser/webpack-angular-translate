@@ -1,7 +1,10 @@
 import htmlparser = require("htmlparser2");
 
 import Translation from "../translation";
-import ElementContext from "./element-context";
+import ElementContext, {
+  RootContext,
+  HtmlParseContext
+} from "./element-context";
 import TranslateLoaderContext from "../translate-loader-context";
 import { matchAngularExpressions, AngularExpressionMatch } from "./ng-filters";
 
@@ -21,20 +24,19 @@ function isAngularExpression(value: string): boolean {
  * Expressions used in the body of an element are translated in the text event.
  */
 export default class TranslateHtmlParser implements htmlparser.Handler {
-  context = new ElementContext(null, "root", null, 1);
+  context: HtmlParseContext;
   parser: htmlparser.Parser;
-  html: string;
 
   constructor(private loader: TranslateLoaderContext) {
     this.ontext = this.ontext.bind(this);
   }
 
   parse(html: string): void {
-    this.html = html;
+    this.context = new RootContext(this.loader, html);
     this.parser = new htmlparser.Parser(this, { decodeEntities: true });
     this.parser.parseComplete(html);
 
-    this.html = this.parser = null;
+    this.context = this.parser = null;
   }
 
   onopentag(name: string, attributes: { [type: string]: string }): void {
@@ -62,7 +64,7 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
 
     // <any attr='{{ x | translate }}'></any>
     Object.keys(attributes).forEach(name =>
-      this.handleAngularExpression(attributes[name])
+      this.handleAngularExpression(attributes[name], getStartIndex(this.parser))
     );
 
     if (!this.context.translateDirective) {
@@ -86,22 +88,29 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
         defaultText =
           attributes["translate-default-attr-" + translatedAttributeName];
 
-      this.registerTranslation(translationId, defaultText);
+      this.registerTranslation({
+        translationId,
+        defaultText,
+        position: getStartIndex(this.parser)
+      });
     });
 
     this.context.defaultText = attributes["translate-default"];
   }
 
-  private handleAngularExpression(value: string): void {
+  private handleAngularExpression(value: string, position: number): void {
     var matches = matchAngularExpressions(value);
-    matches.forEach(this.handleFilterMatch, this);
+    matches.forEach(
+      match => this.handleFilterMatch(match, getStartIndex(this.parser)),
+      this
+    );
 
     if (matches.length > 0) {
       let translationId = matches[0].value;
 
       if (/^".*"$/.test(translationId) || /^.*'$/.test(translationId)) {
         translationId = translationId.substring(1, translationId.length - 1);
-        this.registerTranslation(translationId);
+        this.registerTranslation({ translationId, position });
       }
     }
   }
@@ -115,53 +124,63 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
       expressions: matchAngularExpressions(text)
     });
 
-    // Content of an element that is translated
+    // Content of an element that is translatedya
     if (this.context.translateDirective) {
       // The translation will be registered with the close tag.
       this.context.translationId = this.context.translationId || text;
     } else {
       // only attributes are translated or no translation at all
       var expressionMatches = matchAngularExpressions(text);
-      expressionMatches.forEach(this.handleFilterMatch, this);
+      expressionMatches.forEach(
+        match => this.handleFilterMatch(match, getStartIndex(this.parser)),
+        this
+      );
     }
   }
 
-  private handleFilterMatch(match: AngularExpressionMatch): void {
+  private handleFilterMatch(
+    match: AngularExpressionMatch,
+    position: number
+  ): void {
     var translationId = match.value;
 
     if (!(/^".*"$/.test(translationId) || /^.*'$/.test(translationId))) {
-      this.emitSuppressableError(
-        `A dynamic filter expression is used in the text or an attribute of the element '${this.context.asHtml()}'. Add the '${SUPPRESS_ATTRIBUTE_NAME}' attribute to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).`
+      this.context.emitSuppressableError(
+        `A dynamic filter expression is used in the text or an attribute of the element '${this.context.asHtml()}'. Add the '${SUPPRESS_ATTRIBUTE_NAME}' attribute to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).`,
+        position
       );
     } else if (match.previousFilters) {
-      this.emitSuppressableError(
-        `Another filter is used before the translate filter in the element ${this.context.asHtml()}. Add the '${SUPPRESS_ATTRIBUTE_NAME}' to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).`
+      this.context.emitSuppressableError(
+        `Another filter is used before the translate filter in the element ${this.context.asHtml()}. Add the '${SUPPRESS_ATTRIBUTE_NAME}' to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).`,
+        position
       );
     } else {
       translationId = translationId.substring(1, translationId.length - 1);
-      this.registerTranslation(translationId);
+      this.registerTranslation({ translationId, position });
     }
   }
 
   onclosetag(name: string): void {
-    if (this.context.elementName !== name) {
-      this.emitSuppressableError(
-        "Error parsing html, close tag does not match open tag"
+    if (this.context.tagName !== name) {
+      this.context.emitSuppressableError(
+        "Error parsing html, close tag does not match open tag",
+        this.context.elementStartPosition
       );
     }
 
     // <any translate='test'></any>
     if (this.context.translateDirective) {
       if (this.context.translationId) {
-        this.registerTranslation(
-          this.context.translationId,
-          this.context.defaultText,
-          this.context.elementStartPosition
-        );
+        this.registerTranslation({
+          translationId: this.context.translationId,
+          defaultText: this.context.defaultText,
+          position: this.context.elementStartPosition
+        });
       } else if (!this.context.translateAttributes) {
         // no translate-attr-* and the element has not specified a translation id, someone is using the directive incorrectly
-        this.emitSuppressableError(
-          "the element uses the translate directive but does not specify a translation id nor has any translated attributes (translate-attr-*). Specify a translation id or remove the translate-directive."
+        this.context.emitSuppressableError(
+          "the element uses the translate directive but does not specify a translation id nor has any translated attributes (translate-attr-*). Specify a translation id or remove the translate-directive.",
+          this.context.elementStartPosition
         );
       }
     }
@@ -170,76 +189,40 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
   }
 
   onerror(error: Error): void {
-    this.emitError(
+    this.context.emitError(
       `Failed to parse the html, error is ${error.message}`,
-      this.loc()
+      getStartIndex(this.parser)
     );
   }
 
-  private emitSuppressableError(
-    message: string,
-    loc: { line: number; column: number } = this.loc()
-  ): void {
-    if (this.context.suppressDynamicTranslationErrors) {
-      return;
-    }
-
-    this.emitError(message, loc);
-  }
-
-  private emitError(
-    message: string,
-    loc: { line: number; column: number }
-  ): void {
-    message = `Failed to extract the angular-translate translations from ${
-      this.loader.resource
-    }:${loc.line}:${loc.column}: ${message}`;
-
-    this.loader.emitError(message);
-  }
-
-  private registerTranslation(
-    translationId: string,
-    defaultText?: string,
-    position?: number
-  ): void {
-    const loc = this.loc(position);
+  private registerTranslation(translation: {
+    translationId: string;
+    defaultText?: string;
+    position: number;
+  }) {
     if (
-      isAngularExpression(translationId) ||
-      isAngularExpression(defaultText)
+      isAngularExpression(translation.translationId) ||
+      isAngularExpression(translation.defaultText)
     ) {
-      this.emitSuppressableError(
+      this.context.emitSuppressableError(
         `The element '${this.context.asHtml()}'  in '${
           this.loader.resource
-        }' uses an angular expression as translation id ('${translationId}') or as default text ('${defaultText}'), this is not supported. To suppress this error at the '${SUPPRESS_ATTRIBUTE_NAME}' attribute to the element or any of its parents.`,
-        loc
+        }' uses an angular expression as translation id ('${
+          translation.translationId
+        }') or as default text ('${
+          translation.defaultText
+        }'), this is not supported. To suppress this error at the '${SUPPRESS_ATTRIBUTE_NAME}' attribute to the element or any of its parents.`,
+        translation.position
       );
       return;
     }
 
     this.loader.registerTranslation(
-      new Translation(translationId, defaultText, {
+      new Translation(translation.translationId, translation.defaultText, {
         resource: this.loader.resource,
-        loc: loc
+        loc: this.context.loc(translation.position)
       })
     );
-  }
-
-  private loc(
-    position: number = getStartIndex(this.parser)
-  ): { line: number; column: number } {
-    let line = 1;
-    let column = 0;
-    for (let i = 0; i < position; ++i) {
-      if (this.html[i] === "\n") {
-        ++line;
-        column = 0;
-      } else {
-        ++column;
-      }
-    }
-
-    return { line: line, column: column };
   }
 }
 
