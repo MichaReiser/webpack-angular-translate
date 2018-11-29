@@ -1,13 +1,13 @@
 var assert = require("chai").assert;
-var ElementScope = require("../../dist/html/element-context").default;
+var ElementContext = require("../../dist/html/element-context").default;
 
 describe("ElementContext", function() {
   "use strict";
 
-  var rootContext;
+  let rootContext;
 
   beforeEach(function() {
-    rootContext = new ElementScope(null, "root", null);
+    rootContext = new ElementContext(null, "root", null);
   });
 
   describe("enter", function() {
@@ -67,13 +67,27 @@ describe("ElementContext", function() {
 
     it("displays the text content of the element", function() {
       var body = rootContext.enter("body");
-      body.text = "Hello World";
+      body.addText({
+        raw: "Hello World\n",
+        text: "Hello World"
+      });
 
-      assert.equal(body.asHtml(), "<body>Hello World</body>");
+      assert.equal(body.asHtml(), "<body>Hello World\n</body>");
     });
 
     it("adds the attributes to the element", function() {
-      var body = rootContext.enter("body", { class: "test", id: "main" });
+      var body = rootContext.enter("body", [
+        {
+          name: "class",
+          expressions: [],
+          value: "test"
+        },
+        {
+          name: "id",
+          value: "main",
+          expressions: []
+        }
+      ]);
 
       assert.equal(body.asHtml(), "<body class='test' id='main'>...</body>");
     });

@@ -1,7 +1,7 @@
 import htmlparser = require("htmlparser2");
 
 import Translation from "../translation";
-import ElementContext, { Attributes } from "./element-context";
+import ElementContext from "./element-context";
 import TranslateLoaderContext from "../translate-loader-context";
 import { matchAngularExpressions, AngularExpressionMatch } from "./ng-filters";
 
@@ -21,7 +21,7 @@ function isAngularExpression(value: string): boolean {
  * Expressions used in the body of an element are translated in the text event.
  */
 export default class TranslateHtmlParser implements htmlparser.Handler {
-  context = new ElementContext(null, "root", null);
+  context = new ElementContext(null, "root", null, 1);
   parser: htmlparser.Parser;
   html: string;
 
@@ -37,8 +37,18 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
     this.html = this.parser = null;
   }
 
-  onopentag(name: string, attributes: Attributes): void {
-    this.context = this.context.enter(name, attributes);
+  onopentag(name: string, attributes: { [type: string]: string }): void {
+    const parsedAttributes = Object.keys(attributes).map(attributeName => ({
+      name: attributeName,
+      value: attributes[attributeName],
+      expressions: matchAngularExpressions(attributes[attributeName])
+    }));
+
+    this.context = this.context.enter(
+      name,
+      parsedAttributes,
+      getStartIndex(this.parser)
+    );
 
     if (name === "translate") {
       this.context.translateDirective = true;
@@ -59,8 +69,6 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
       // should not be translated
       return;
     }
-
-    this.context.elementStartPosition = getStartIndex(this.parser);
 
     // translate-attr-*
     const translateAttributes = Object.keys(attributes).filter(key =>
@@ -98,8 +106,14 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
     }
   }
 
-  ontext(text: string): void {
-    this.context.text = text = text.trim();
+  ontext(raw: string): void {
+    const text = raw.trim();
+    this.context.addText({
+      startPosition: getStartIndex(this.parser),
+      raw,
+      text,
+      expressions: matchAngularExpressions(text)
+    });
 
     // Content of an element that is translated
     if (this.context.translateDirective) {

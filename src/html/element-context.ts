@@ -1,6 +1,16 @@
+import { AngularExpressionMatch } from "./ng-filters";
 
-export interface Attributes {
-    [type: string]: string;
+export interface Attribute {
+  name: string;
+  value: string;
+  expressions: AngularExpressionMatch[];
+}
+
+export interface Text {
+  startPosition: number;
+  text: string;
+  raw: string;
+  expressions: AngularExpressionMatch[];
 }
 
 /**
@@ -11,68 +21,91 @@ export interface Attributes {
  * The child context inherits some attributes, like if translation-errors should be suppressed.
  */
 export default class ElementContext {
-    /**
-     * The html attributes of the current element
-     */
-    attributes: Attributes;
+  /**
+   * The html attributes of the current element
+   */
+  readonly attributes: Attribute[];
 
-    /**
-     * Is the translate directive applied to the current element (translate element or element with translate attribute)
-     */
-    translateDirective = false;
+  /**
+   * Is the translate directive applied to the current element (translate element or element with translate attribute)
+   */
+  translateDirective = false;
 
-    /**
-     * Does the element has translate-attr-* attributes?
-     */
-    translateAttributes = true;
+  /**
+   * Does the element has translate-attr-* attributes?
+   */
+  translateAttributes = true;
 
-    /**
-     * The position in the html file where the element has started.
-     */
-    elementStartPosition: number;
+  /**
+   * The position in the html file where the element has started.
+   */
+  readonly elementStartPosition: number;
 
-    /**
-     * The translation id
-     */
-    translationId: string;
+  /**
+   * The translation id
+   */
+  translationId: string;
 
-    /**
-     * The default text of the translation
-     */
-    defaultText: string;
+  /**
+   * The default text of the translation
+   */
+  defaultText: string;
 
-    /**
-     * The content text of the element
-     */
-    text: string;
+  /**
+   * The text contents of the element
+   */
+  readonly texts: Text[] = [];
 
-    private _suppressDynamicTranslationErrorMessage = false;
+  private _suppressDynamicTranslationErrorMessage = false;
 
-    constructor(public parent: ElementContext, public elementName: string, attributes: Attributes) {
-        this.attributes = attributes || {};
-    }
+  constructor(
+    public readonly parent: ElementContext,
+    public readonly elementName: string,
+    attributes: Attribute[],
+    startPosition: number
+  ) {
+    this.attributes = attributes || [];
+    this.elementStartPosition = startPosition;
+  }
 
-    get suppressDynamicTranslationErrors(): boolean {
-        return this._suppressDynamicTranslationErrorMessage || (this.parent && this.parent.suppressDynamicTranslationErrors);
-    }
+  get suppressDynamicTranslationErrors(): boolean {
+    return (
+      this._suppressDynamicTranslationErrorMessage ||
+      (this.parent && this.parent.suppressDynamicTranslationErrors)
+    );
+  }
 
-    set suppressDynamicTranslationErrors(suppress: boolean) {
-        this._suppressDynamicTranslationErrorMessage = suppress;
-    }
+  set suppressDynamicTranslationErrors(suppress: boolean) {
+    this._suppressDynamicTranslationErrorMessage = suppress;
+  }
 
-    enter(elementName: string, attributes: Attributes): ElementContext {
-        return new ElementContext(this, elementName, attributes);
-    }
+  addText(text: Text) {
+    this.texts.push(text);
+  }
 
-    leave(): ElementContext {
-        return this.parent;
-    }
+  enter(
+    elementName: string,
+    attributes: Attribute[],
+    startPosition: number
+  ): ElementContext {
+    return new ElementContext(this, elementName, attributes, startPosition);
+  }
 
-    asHtml(): string {
-        let result = `<${this.elementName}`;
+  leave(): ElementContext {
+    return this.parent;
+  }
 
-        result = Object.keys(this.attributes).reduce((memo, attributeName) =>  memo + " " + attributeName + "='" + this.attributes[attributeName] + "'", result);
-        const text = this.text ? this.text : "...";
-        return `${result}>${text}</${this.elementName}>`;
-    }
+  asHtml(): string {
+    let result = `<${this.elementName}`;
+
+    result = this.attributes.reduce(
+      (memo, { name, value }) => memo + " " + name + "='" + value + "'",
+      result
+    );
+    const text =
+      this.texts.length === 0
+        ? "..."
+        : this.texts.reduce((memo, text) => memo + text.raw, "");
+    return `${result}>${text}</${this.elementName}>`;
+  }
 }
