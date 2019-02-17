@@ -34,6 +34,18 @@ describe("StatefulHtmlParserSpecs", function() {
       );
     });
 
+    it("uses the translate attribute value as id", function() {
+      parse("<translate translate='simple-id'>Simple</translate>");
+
+      sinon.assert.calledWith(
+        loaderContext.registerTranslation,
+        new Translation("simple-id", undefined, {
+          resource: "test.html",
+          loc: { line: 1, column: 0 }
+        })
+      );
+    });
+
     it("uses the value of the translate-default as defaultText", function() {
       parse("<translate translate-default='Other default'>Simple</translate>");
 
@@ -199,7 +211,7 @@ describe("StatefulHtmlParserSpecs", function() {
     });
 
     it("only translates the attribute if the translation id is empty", function() {
-      parse("<div translate translate-attr-title='Simple'>    </div>");
+      parse("<div translate translate-attr-title='Simple'></div>");
 
       sinon.assert.calledWith(
         loaderContext.registerTranslation,

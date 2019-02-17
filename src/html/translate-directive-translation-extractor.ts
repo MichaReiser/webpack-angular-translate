@@ -14,13 +14,16 @@ export default function tranlsateDirectiveTranslationExtractor(
 ) {
   let translateDirective: boolean;
   let translationId: string;
+  let defaultText: string;
   const translateAttribute = element.attributes.find(
     attribute => attribute.name === "translate"
   );
 
   if (element.tagName === "translate") {
     translateDirective = true;
-  } else if (translateAttribute) {
+  }
+
+  if (translateAttribute) {
     translateDirective = true;
     translationId = translateAttribute.value;
   }
