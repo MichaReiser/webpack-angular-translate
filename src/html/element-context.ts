@@ -5,6 +5,7 @@ export interface Attribute {
   name: string;
   value: string;
   expressions: AngularExpressionMatch[];
+  startPosition: number;
 }
 
 export interface Text {
@@ -15,17 +16,6 @@ export interface Text {
 }
 
 export abstract class HtmlParseContext {
-  /**
-   * The html attributes of the current element
-   */
-  readonly attributes: Attribute[];
-
-  /**
-   * The position in the html file where the element has started.
-   */
-  readonly elementStartPosition: number;
-  readonly tagName: string;
-
   /**
    * The text contents of the element
    */
@@ -53,12 +43,6 @@ export abstract class HtmlParseContext {
    */
   defaultText: string;
 
-  constructor(tagName: string, attributes: Attribute[], startPosition: number) {
-    this.attributes = attributes || [];
-    this.tagName = tagName;
-    this.elementStartPosition = startPosition;
-  }
-
   enter(
     elementName: string,
     attributes: Attribute[],
@@ -83,29 +67,17 @@ export abstract class HtmlParseContext {
     this.emitError(message, position);
   }
 
-  asHtml(): string {
-    let result = `<${this.tagName}`;
-
-    result = this.attributes.reduce(
-      (memo, { name, value }) => memo + " " + name + "='" + value + "'",
-      result
-    );
-    const text =
-      this.texts.length === 0
-        ? "..."
-        : this.texts.reduce((memo, text) => memo + text.raw, "");
-    return `${result}>${text}</${this.tagName}>`;
-  }
+  abstract asHtml(): string;
 
   abstract loc(position: number): { line: number; column: number };
 }
 
-export class RootContext extends HtmlParseContext {
+export class DocumentContext extends HtmlParseContext {
   constructor(
     private readonly loader: TranslateLoaderContext,
     private readonly html: string
   ) {
-    super("root", [], 1);
+    super();
     this.suppressDynamicTranslationErrors = false;
   }
 
@@ -120,6 +92,10 @@ export class RootContext extends HtmlParseContext {
     }:${loc.line}:${loc.column}: ${message}`;
 
     this.loader.emitError(message);
+  }
+
+  asHtml(): string {
+    return this.texts.reduce((memo, text) => memo + text.raw, "");
   }
 
   loc(position: number): { line: number; column: number } {
@@ -146,6 +122,17 @@ export class RootContext extends HtmlParseContext {
  * The child context inherits some attributes, like if translation-errors should be suppressed.
  */
 export default class ElementContext extends HtmlParseContext {
+  /**
+   * The html attributes of the current element
+   */
+  readonly attributes: Attribute[];
+
+  /**
+   * The position in the html file where the element has started.
+   */
+  readonly elementStartPosition: number;
+  readonly tagName: string;
+
   private _suppressDynamicTranslationErrorMessage = false;
 
   constructor(
@@ -154,7 +141,10 @@ export default class ElementContext extends HtmlParseContext {
     attributes: Attribute[],
     startPosition: number
   ) {
-    super(tagName, attributes, startPosition);
+    super();
+    this.attributes = attributes || [];
+    this.tagName = tagName;
+    this.elementStartPosition = startPosition;
   }
 
   get suppressDynamicTranslationErrors(): boolean {
@@ -170,6 +160,20 @@ export default class ElementContext extends HtmlParseContext {
 
   emitError(message: string, position: number): void {
     return this.parent.emitError(message, position);
+  }
+
+  asHtml(): string {
+    let result = `<${this.tagName}`;
+
+    result = this.attributes.reduce(
+      (memo, { name, value }) => memo + " " + name + "='" + value + "'",
+      result
+    );
+    const text =
+      this.texts.length === 0
+        ? "..."
+        : this.texts.reduce((memo, text) => memo + text.raw, "");
+    return `${result}>${text}</${this.tagName}>`;
   }
 
   leave(): HtmlParseContext {

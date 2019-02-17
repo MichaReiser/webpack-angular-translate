@@ -1,6 +1,8 @@
 import cheerio = require("cheerio");
+import * as loaderUtils from "loader-utils";
 
 import TranslateLoaderContext from "../translate-loader-context";
+import tranlsateDirectiveTranslationExtractor from "./translate-directive-translation-extractor";
 import StatefulHtmlParser, {
   SUPPRESS_ATTRIBUTE_NAME
 } from "./translate-html-parser";
@@ -56,7 +58,13 @@ function loader(source: string, sourceMaps: any): void | string {
 
   loader.pruneTranslations(loader.resource);
 
-  new StatefulHtmlParser(loader).parse(source);
+  const options = loaderUtils.getOptions(loader) || {};
+  const translationExtractors = options.translationExtractors || [];
+
+  new StatefulHtmlParser(loader, [
+    ...translationExtractors,
+    tranlsateDirectiveTranslationExtractor
+  ]).parse(source);
 
   let result = source;
   if (!this.debug) {
