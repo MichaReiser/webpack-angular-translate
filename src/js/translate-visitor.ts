@@ -104,7 +104,10 @@ export default class TranslateVisitor extends types.PathVisitor
     const translations = translationIds.map(translationId =>
       this.createTranslation(translationId, defaultText, call)
     );
-    translations.forEach(this.loader.registerTranslation);
+
+    for (const translation of translations) {
+      this.loader.registerTranslation(translation);
+    }
   }
 
   private getTranslationIdFromTranslateCall(
@@ -244,7 +247,9 @@ export default class TranslateVisitor extends types.PathVisitor
       return this.createTranslation(translationId, defaultText, call);
     }, this);
 
-    translations.forEach(this.loader.registerTranslation);
+    for (const translation of translations) {
+      this.loader.registerTranslation(translation);
+    }
     const ids = b.arrayExpression(
       translations.map(translation => b.literal(translation.id))
     );
@@ -369,7 +374,7 @@ export default class TranslateVisitor extends types.PathVisitor
 
   private valueToString(value: any): string {
     if (value === null || typeof value === "undefined") {
-      return null;
+      return undefined;
     }
 
     return "" + value;
