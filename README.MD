@@ -74,6 +74,74 @@ The loaders accepts the name of a loader that should be applied in advance. E.g.
 }
 ```
 
+### Custom HTML Translation extractors
+
+The htmlLoader supports registering custom HTML text extractors and rewrites the AngularJS extractor to be based on the same API.
+
+The API of an extractor is:
+
+```
+export interface HtmlTranslationExtractor {
+  (element: AngularElement, context: HtmlTranslationExtractionContext): void;
+}
+
+export interface AngularElement {
+  tagName: string;
+  attributes: Attribute[];
+  texts: Text[];
+  startPosition: number;
+}
+
+export interface HtmlTranslationExtractionContext {
+  emitError(message: string, position: number): void;
+  emitSuppressableError(message: string, position: number): void;
+  registerTranslation(translation: {
+    translationId: string;
+    defaultText?: string;
+    position: number;
+  }): void;
+
+  asHtml(): void;
+}
+```
+
+The extractor receives an angular element with all its attributes and its direct text siblings as well as a context that can be used to either register a new translation or emit a warning/error.
+The [translate-directive-translation-extractor.ts](src/html/translate-directive-translation-extractor.ts) contains an implementation of an extractor.
+Custom extractors can be specified with the html loader:
+
+```js
+{
+  loader: WebPackAngularTranslate.htmlLoader({
+    translationExtractors: [(element, context) => { ... }]
+  })
+}
+```
+
+WebpackAngularTranslates provides the `angularI18nTranslationsExtractor` to support extractions of translations in hybrid applications 
+(Application which use both AngularJs and Angular). It can also be used for pure Angular applications.
+It extracts translations from the `i18n` and `i18n-[attr]` directives, used by [Angular for Internationalization](https://angular.io/guide/i18n).
+
+```js
+{
+     use: [{
+         loader: WebPackAngularTranslate.htmlLoader(),
+         options: {
+             translationExtractors: [WebPackAngularTranslate.angularI18nTranslationsExtractor]
+         }
+     }]
+}
+```
+
+Examples:
+
+`<h1 i18n="@@A title">A title</h1>` results in a translation with `{id: "A title", defaultTranslation: "A title"}` 
+
+`<p i18n="@@loan-intro-description-text">This is a very long text for the loan intro!</p>` results in a translation with `{id: "loan-intro-description-text", defaultTranslation: "This is a very long text for the loan intro!"}` 
+
+`<img src=... title="My image title" i18n-title="@@MyImage" />` results in a translation with `{id: "MyImage", defaultTranslation: "My image title"}`
+
+Note: The extraction will only work for labels with an explicitly provided `@@id` and default translation.
+
 ## Supported Expressions
 
 ### Directive
