@@ -76,9 +76,7 @@ The loaders accepts the name of a loader that should be applied in advance. E.g.
 
 ### Custom HTML Translation extractors
 
-The htmlLoader supports registering custom HTML text extractors and rewrites the AngularJS extractor to be based on the same API.
-
-The API of an extractor is:
+The htmlLoader supports registering custom HTML text extractors. The API of an extractor is:
 
 ```
 export interface HtmlTranslationExtractor {
@@ -117,8 +115,9 @@ Custom extractors can be specified with the html loader:
 }
 ```
 
-WebpackAngularTranslates provides the `angularI18nTranslationsExtractor` to support extractions of translations in hybrid applications 
-(Application which use both AngularJs and Angular). It can also be used for pure Angular applications.
+#### AngularI18nTranslationsExtractor
+
+WebpackAngularTranslates provides the `angularI18nTranslationsExtractor` to support extractions of translations in applications using [angular](https://angular.io/).
 It extracts translations from the `i18n` and `i18n-[attr]` directives, used by [Angular for Internationalization](https://angular.io/guide/i18n).
 
 ```js
