@@ -43,15 +43,13 @@ function handleTranslationsOfElements(
 ): void {
     const translationId = extractTranslationId(attribute, context);
 
-    let defaultTranslation: string;
     if (element.texts.length > 0 && translationId) {
-        defaultTranslation = element.texts[0].text;
         context.registerTranslation({
             translationId: translationId,
-            defaultText: defaultTranslation,
+            defaultText: element.texts[0].text,
             position: element.startPosition
         });
-    } else {
+    } else if (translationId) {
         context.emitError(`The element ${context.asHtml()} with attribute  ${attribute.name} is empty and is therefore missing the default translation.`, attribute.startPosition);
     }
 }
@@ -63,28 +61,39 @@ function handleTranslationsOfAttributes(
 ): void {
 
     for (const i18nAttribute of i18nAttributes) {
-        const translationId = extractTranslationId(i18nAttribute, context);
-        const attributeName = i18nAttribute.name.substr(`${I18N_ATTRIBUTE_NAME}-`.length);
-        const attribute = element.attributes.find(attribute => attribute.name === attributeName);
-
-        if (!attribute) {
-            context.emitError(`The element ${context.asHtml()} with ${i18nAttribute.name} is missing a corresponding ${attributeName} attribute.`, element.startPosition);
-        }
-
-        const defaultText = attribute ? attribute.value : undefined;
-
-        if (!defaultText) {
-            context.emitError(`The element ${context.asHtml()} with ${i18nAttribute.name} is missing a value for the corresponding ${attributeName} attribute.`, element.startPosition);
-        }
-
-        if (translationId && attribute && defaultText) {
-            context.registerTranslation({
-                translationId: translationId,
-                defaultText: defaultText,
-                position: i18nAttribute.startPosition
-            });
-        }
+        handleAttribute(element, context, i18nAttribute);
     }
+}
+
+function handleAttribute(
+    element: AngularElement,
+    context: HtmlTranslationExtractionContext,
+    i18nAttribute: Attribute
+): void {
+    const translationId = extractTranslationId(i18nAttribute, context);
+    if (!translationId) {
+        return;
+    }
+    const attributeName = i18nAttribute.name.substr(`${I18N_ATTRIBUTE_NAME}-`.length);
+    const attribute = element.attributes.find(attribute => attribute.name === attributeName);
+
+    if (!attribute) {
+        context.emitError(`The element ${context.asHtml()} with ${i18nAttribute.name} is missing a corresponding ${attributeName} attribute.`, element.startPosition);
+        return;
+    }
+
+    const defaultText = attribute.value;
+
+    if (!defaultText) {
+        context.emitError(`The element ${context.asHtml()} with ${i18nAttribute.name} is missing a value for the corresponding ${attributeName} attribute.`, element.startPosition);
+        return;
+    }
+
+    context.registerTranslation({
+        translationId: translationId,
+        defaultText: defaultText,
+        position: i18nAttribute.startPosition
+    });
 }
 
 function extractTranslationId(attribute: Attribute, context: HtmlTranslationExtractionContext): string {
