@@ -8,7 +8,7 @@ const ID_INDICATOR = "@@";
 /**
  * Angular uses i18n and i18n-[attr] attributes for internationalization.
  * The angularI18nTranslationsExtractor looks for these attributes on elements
- * and extracts and registers the found ids and default translations from the elements.
+ * and extracts the found ids and default translations from the elements.
  *
  * @example
  * <div i18n="@@translationId">some translation</div>
