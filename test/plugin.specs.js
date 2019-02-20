@@ -14,10 +14,13 @@ const fs = require("fs");
  * @param assertCallback {function({}, {})} Callback that contains the assert statements. the first argument
  * is the source of the translations file. The webpack stats (containing warnings and errors) is passed as second argument.
  */
-async function compileAndGetTranslations(fileName) {
+async function compileAndGetTranslations(fileName, customTranslationExtractors) {
+  if (!customTranslationExtractors) {
+    customTranslationExtractors = [];
+  }
   var options = webpackOptions({
     entry: ["./test/cases/" + fileName]
-  });
+  }, customTranslationExtractors);
 
   const { error, stats, volume } = await compile(options);
   assert.notOk(error, JSON.stringify(error));
@@ -32,7 +35,7 @@ async function compileAndGetTranslations(fileName) {
   return { translations, stats };
 }
 
-function webpackOptions(options) {
+function webpackOptions(options, customTranslationExtractors) {
   "use strict";
   return deepExtend(
     {
@@ -53,7 +56,10 @@ function webpackOptions(options) {
                 }
               },
               {
-                loader: WebPackAngularTranslate.htmlLoader()
+                loader: WebPackAngularTranslate.htmlLoader(),
+                options: {
+                  translationExtractors: customTranslationExtractors
+                }
               }
             ]
           },
@@ -312,6 +318,27 @@ describe("HTML Loader", function() {
       );
       assert.propertyVal(translations, "Test", "Test");
     });
+  });
+
+  it("can be used with the angular i18n translation extractor", async function() {
+    "use strict";
+
+    const { translations } = await compileAndGetTranslations(
+        "translate-and-i18n.html",
+        [WebPackAngularTranslate.angularI18nTranslationsExtractor]);
+
+    assert.propertyVal(
+        translations,
+        "translateId",
+        "Translate translation"
+    );
+
+    assert.propertyVal(
+        translations,
+        "i18nId",
+        "I18n translation"
+    );
+
   });
 });
 
