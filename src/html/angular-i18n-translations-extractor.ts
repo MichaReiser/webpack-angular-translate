@@ -49,7 +49,7 @@ function handleTranslationsOfElements(
             defaultText: element.texts[0].text,
             position: element.startPosition
         });
-    } else if (translationId) {
+    } else if (element.texts.length === 0) {
         context.emitError(`The element ${context.asHtml()} with attribute  ${attribute.name} is empty and is therefore missing the default translation.`, attribute.startPosition);
     }
 }
