@@ -37,9 +37,9 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(loaderContext.registerTranslation, {
+      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
         id: "test",
-        defaultText: null,
+        defaultText: undefined,
         usages: [
           {
             resource: "test.js",
@@ -61,7 +61,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(loaderContext.registerTranslation, {
+      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
         id: "test",
         defaultText: "Test",
         usages: [
@@ -82,9 +82,9 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(loaderContext.registerTranslation, {
+      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
         id: "test",
-        defaultText: null,
+        defaultText: undefined,
         usages: [
           {
             resource: "test.js",
@@ -93,9 +93,9 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      sinon.assert.calledWith(loaderContext.registerTranslation, {
+      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
         id: "test2",
-        defaultText: null,
+        defaultText: undefined,
         usages: [
           {
             resource: "test.js",
@@ -116,9 +116,9 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(loaderContext.registerTranslation, {
+      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
         id: "test",
-        defaultText: null,
+        defaultText: undefined,
         usages: [
           {
             resource: "test.js",
@@ -139,9 +139,9 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(loaderContext.registerTranslation, {
+      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
         id: "test",
-        defaultText: null,
+        defaultText: undefined,
         usages: [
           {
             resource: "test.js",
@@ -340,9 +340,9 @@ describe("TranslateVisitor", function() {
 
       var ast = visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWith(loaderContext.registerTranslation, {
+      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
         id: "test",
-        defaultText: null,
+        defaultText: undefined,
         usages: [
           {
             resource: "test.js",
@@ -370,7 +370,7 @@ describe("TranslateVisitor", function() {
 
       var ast = visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWith(loaderContext.registerTranslation, {
+      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
         id: "test",
         defaultText: "default Text",
         usages: [
@@ -490,7 +490,7 @@ describe("TranslateVisitor", function() {
 
       var ast = visitor.visit(registerTranslationsCall);
 
-      sinon.assert.calledWith(loaderContext.registerTranslation, {
+      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
         id: "test",
         defaultText: "Test",
         usages: [
@@ -501,7 +501,7 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      sinon.assert.calledWith(loaderContext.registerTranslation, {
+      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
         id: "x",
         defaultText: "X",
         usages: [

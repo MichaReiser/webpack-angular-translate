@@ -194,7 +194,25 @@ describe("HTML Loader", function() {
       var error = stats.compilation.errors[0];
       assert.include(
         error.message,
-        "expressions.html' uses an angular expression as translation id ('{{editCtrl.title}}') or as default text ('undefined'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
+        "expressions.html' uses an angular expression as translation id ('{{editCtrl.title}}') or as default text ('undefined'). This is not supported. To suppress this error add the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
+      );
+    });
+
+    it("emits an error if a translated angular element has multiple child text elements and does not specify an id", async () => {
+      const { stats } = await compileAndGetTranslations(
+        "multiple-child-texts.html"
+      );
+
+      assert.lengthOf(
+        stats.compilation.errors,
+        1,
+        "an error should have been emitted for the element having multipe child text elements"
+      );
+
+      var error = stats.compilation.errors[0];
+      assert.include(
+        error.message,
+        "The element does not specify a translation id but has multiple child text elements. Specify the translation id on the element to define the translation id."
       );
     });
 

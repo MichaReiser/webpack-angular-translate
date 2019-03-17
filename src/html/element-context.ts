@@ -1,6 +1,97 @@
+import { AngularExpressionMatch } from "./ng-filters";
+import TranslateLoaderContext from "../translate-loader-context";
 
-export interface Attributes {
-    [type: string]: string;
+export interface Attribute {
+  name: string;
+  value: string;
+  expressions: AngularExpressionMatch[];
+  startPosition: number;
+}
+
+export interface Text {
+  startPosition: number;
+  text: string;
+  raw: string;
+  expressions: AngularExpressionMatch[];
+}
+
+export abstract class HtmlParseContext {
+  /**
+   * The text contents of the element
+   */
+  readonly texts: Text[] = [];
+
+  public suppressDynamicTranslationErrors: boolean;
+
+  enter(
+    elementName: string,
+    attributes: Attribute[],
+    startPosition: number
+  ): HtmlParseContext {
+    return new ElementContext(this, elementName, attributes, startPosition);
+  }
+
+  abstract leave(): HtmlParseContext;
+
+  addText(text: Text): void {
+    this.texts.push(text);
+  }
+
+  abstract emitError(message: string, position: number): void;
+
+  emitSuppressableError(message: string, position: number): void {
+    if (this.suppressDynamicTranslationErrors) {
+      return;
+    }
+
+    this.emitError(message, position);
+  }
+
+  abstract asHtml(): string;
+
+  abstract loc(position: number): { line: number; column: number };
+}
+
+export class DocumentContext extends HtmlParseContext {
+  constructor(
+    private readonly loader: TranslateLoaderContext,
+    private readonly html: string
+  ) {
+    super();
+    this.suppressDynamicTranslationErrors = false;
+  }
+
+  leave(): never {
+    throw new Error(`Cannot leave the root context.`);
+  }
+
+  emitError(message: string, position: number) {
+    const loc = this.loc(position);
+    message = `Failed to extract the angular-translate translations from ${
+      this.loader.resource
+    }:${loc.line}:${loc.column}: ${message}`;
+
+    this.loader.emitError(message);
+  }
+
+  asHtml(): string {
+    return this.texts.reduce((memo, text) => memo + text.raw, "");
+  }
+
+  loc(position: number): { line: number; column: number } {
+    let line = 1;
+    let column = 0;
+    for (let i = 0; i < position; ++i) {
+      if (this.html[i] === "\n") {
+        ++line;
+        column = 0;
+      } else {
+        ++column;
+      }
+    }
+
+    return { line, column };
+  }
 }
 
 /**
@@ -10,69 +101,66 @@ export interface Attributes {
  * The parser calls `enter` for each new element. This will create a child context of the current context.
  * The child context inherits some attributes, like if translation-errors should be suppressed.
  */
-export default class ElementContext {
-    /**
-     * The html attributes of the current element
-     */
-    attributes: Attributes;
+export default class ElementContext extends HtmlParseContext {
+  /**
+   * The html attributes of the current element
+   */
+  readonly attributes: Attribute[];
 
-    /**
-     * Is the translate directive applied to the current element (translate element or element with translate attribute)
-     */
-    translateDirective = false;
+  /**
+   * The position in the html file where the element has started.
+   */
+  readonly elementStartPosition: number;
+  readonly tagName: string;
 
-    /**
-     * Does the element has translate-attr-* attributes?
-     */
-    translateAttributes = true;
+  private _suppressDynamicTranslationErrorMessage = false;
 
-    /**
-     * The position in the html file where the element has started.
-     */
-    elementStartPosition: number;
+  constructor(
+    public readonly parent: HtmlParseContext,
+    tagName: string,
+    attributes: Attribute[],
+    startPosition: number
+  ) {
+    super();
+    this.attributes = attributes || [];
+    this.tagName = tagName;
+    this.elementStartPosition = startPosition;
+  }
 
-    /**
-     * The translation id
-     */
-    translationId: string;
+  get suppressDynamicTranslationErrors(): boolean {
+    return (
+      this._suppressDynamicTranslationErrorMessage ||
+      (this.parent && this.parent.suppressDynamicTranslationErrors)
+    );
+  }
 
-    /**
-     * The default text of the translation
-     */
-    defaultText: string;
+  set suppressDynamicTranslationErrors(suppress: boolean) {
+    this._suppressDynamicTranslationErrorMessage = suppress;
+  }
 
-    /**
-     * The content text of the element
-     */
-    text: string;
+  emitError(message: string, position: number): void {
+    return this.parent.emitError(message, position);
+  }
 
-    private _suppressDynamicTranslationErrorMessage = false;
+  asHtml(): string {
+    let result = `<${this.tagName}`;
 
-    constructor(public parent: ElementContext, public elementName: string, attributes: Attributes) {
-        this.attributes = attributes || {};
-    }
+    result = this.attributes.reduce(
+      (memo, { name, value }) => memo + " " + name + "='" + value + "'",
+      result
+    );
+    const text =
+      this.texts.length === 0
+        ? "..."
+        : this.texts.reduce((memo, text) => memo + text.raw, "");
+    return `${result}>${text}</${this.tagName}>`;
+  }
 
-    get suppressDynamicTranslationErrors(): boolean {
-        return this._suppressDynamicTranslationErrorMessage || (this.parent && this.parent.suppressDynamicTranslationErrors);
-    }
+  leave(): HtmlParseContext {
+    return this.parent;
+  }
 
-    set suppressDynamicTranslationErrors(suppress: boolean) {
-        this._suppressDynamicTranslationErrorMessage = suppress;
-    }
-
-    enter(elementName: string, attributes: Attributes): ElementContext {
-        return new ElementContext(this, elementName, attributes);
-    }
-
-    leave(): ElementContext {
-        return this.parent;
-    }
-
-    asHtml(): string {
-        let result = `<${this.elementName}`;
-
-        result = Object.keys(this.attributes).reduce((memo, attributeName) =>  memo + " " + attributeName + "='" + this.attributes[attributeName] + "'", result);
-        const text = this.text ? this.text : "...";
-        return `${result}>${text}</${this.elementName}>`;
-    }
+  loc(position: number) {
+    return this.parent.loc(position);
+  }
 }

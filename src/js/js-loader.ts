@@ -61,7 +61,7 @@ async function extractTranslations(
   source: string,
   sourceMaps: any
 ) {
-  const options = loaderUtils.getOptions(loader) || {};
+  const options: LoaderOptions = loaderUtils.getOptions(loader) || {};
   const parserOptions = options.parserOptions || {};
 
   loader.pruneTranslations(loader.resource);
