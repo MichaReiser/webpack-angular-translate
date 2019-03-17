@@ -1,5 +1,3 @@
-var sinon = require("sinon");
-var assert = require("chai").assert;
 var types = require("ast-types");
 var b = types.builders;
 var n = types.namedTypes;
@@ -13,9 +11,9 @@ describe("TranslateVisitor", function() {
 
   beforeEach(function() {
     loaderContext = {
-      registerTranslation: sinon.spy(),
-      pruneTranslations: sinon.spy(),
-      emitError: sinon.spy()
+      registerTranslation: jest.fn(),
+      pruneTranslations: jest.fn(),
+      emitError: jest.fn()
     };
 
     visitor = new TranslateVisitor(loaderContext);
@@ -37,7 +35,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: undefined,
         usages: [
@@ -61,7 +59,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: "Test",
         usages: [
@@ -82,7 +80,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: undefined,
         usages: [
@@ -93,7 +91,7 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test2",
         defaultText: undefined,
         usages: [
@@ -116,7 +114,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: undefined,
         usages: [
@@ -139,7 +137,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: undefined,
         usages: [
@@ -158,14 +156,11 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
+      expect(loaderContext.emitError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message:
             "Illegal argument for call to $translate: A call to $translate requires at least one argument that is the translation id. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
+        })
       );
     });
 
@@ -176,14 +171,11 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
+      expect(loaderContext.emitError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message:
             "Illegal argument for call to $translate: The translation id should either be a string literal or an array containing string literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
+        })
       );
     });
 
@@ -196,14 +188,11 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
+      expect(loaderContext.emitError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message:
             "Illegal argument for call to $translate: The array with the translation ids should only contain literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:0)."
-          )
-          .and(sinon.match.instanceOf(Error))
+        })
       );
     });
 
@@ -219,14 +208,11 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
+      expect(loaderContext.emitError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message:
             "Illegal argument for call to $translate: The default text should be a string literal. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
+        })
       );
     });
 
@@ -250,11 +236,8 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(root);
 
-      assert.notOk(loaderContext.emitError.called, "No error has been emitted");
-      assert.notOk(
-        loaderContext.registerTranslation.called,
-        "No translation has been registered"
-      );
+      expect(loaderContext.emitError).not.toHaveBeenCalled();
+      expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
     });
 
     it("suppress the id needs to be a literal error if block contains 'suppress-dynamic-translation-error: true' comment", function() {
@@ -277,11 +260,8 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(root);
 
-      assert.notOk(loaderContext.emitError.called, "No error has been emitted");
-      assert.notOk(
-        loaderContext.registerTranslation.called,
-        "No translation has been registered"
-      );
+      expect(loaderContext.emitError).not.toHaveBeenCalled();
+      expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
     });
 
     it("suppress the default value needs to be a literal error if block contains 'suppress-dynamic-translation-error: true' comment", function() {
@@ -309,11 +289,8 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(root);
 
-      assert.notOk(loaderContext.emitError.called, "No error has been emitted");
-      assert.notOk(
-        loaderContext.registerTranslation.called,
-        "No translation has been registered"
-      );
+      expect(loaderContext.emitError).not.toHaveBeenCalled();
+      expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
     });
   });
 
@@ -340,7 +317,7 @@ describe("TranslateVisitor", function() {
 
       var ast = visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: undefined,
         usages: [
@@ -351,13 +328,9 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      assert.ok(visitor.changedAst, "has removed the registerTranslation call");
-      assert.ok(n.Literal.check(ast));
-      assert.equal(
-        ast.value,
-        "test",
-        "has removed the registerTranslation call with the translation id"
-      );
+      expect(visitor.changedAst).toBe(true);
+      expect(n.Literal.check(ast)).toBe(true);
+      expect(ast.value).toBe("test");
     });
 
     it("extracts the translation with it's id and default text from a i18n.registerTranslation call with a two arguments", function() {
@@ -370,7 +343,7 @@ describe("TranslateVisitor", function() {
 
       var ast = visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: "default Text",
         usages: [
@@ -381,13 +354,9 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      assert.ok(visitor.changedAst, "has removed the registerTranslation call");
-      assert.ok(n.Literal.check(ast));
-      assert.equal(
-        ast.value,
-        "test",
-        "has removed the registerTranslation call with the translation id"
-      );
+      expect(visitor.changedAst).toBe(true);
+      expect(n.Literal.check(ast)).toBe(true);
+      expect(ast.value).toBe("test");
     });
 
     it("emits an error if called without arguments", function() {
@@ -397,14 +366,11 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
+      expect(loaderContext.emitError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message:
             "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
+        })
       );
     });
 
@@ -417,15 +383,11 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
-
+      expect(loaderContext.emitError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message:
             "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
+        })
       );
     });
 
@@ -439,14 +401,11 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
+      expect(loaderContext.emitError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message:
             "Illegal argument for call to i18n.registerTranslation: the default text has to be a literal (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
+        })
       );
     });
   });
@@ -473,9 +432,9 @@ describe("TranslateVisitor", function() {
 
       var ast = visitor.visit(registerTranslationCall);
 
-      assert.equal(loaderContext.registerTranslation.callCount, 0);
-      assert.ok(visitor.changedAst);
-      assert.ok(n.ArrayExpression.check(ast));
+      expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
+      expect(visitor.changedAst).toBe(true);
+      expect(n.ArrayExpression.check(ast)).toBe(true);
     });
 
     it("extracts the translation with it's id and default text from a i18n.registerTranslations call", function() {
@@ -490,7 +449,7 @@ describe("TranslateVisitor", function() {
 
       var ast = visitor.visit(registerTranslationsCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: "Test",
         usages: [
@@ -501,7 +460,7 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "x",
         defaultText: "X",
         usages: [
@@ -512,13 +471,13 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      assert.ok(visitor.changedAst);
-      assert.ok(n.ArrayExpression.check(ast));
-      assert.equal(ast.elements.length, 2);
-      assert.ok(n.Literal.check(ast.elements[0]));
-      assert.ok(n.Literal.check(ast.elements[1]));
-      assert.equal(ast.elements[0].value, "test");
-      assert.equal(ast.elements[1].value, "x");
+      expect(visitor.changedAst).toBe(true);
+      expect(n.ArrayExpression.check(ast)).toBe(true);
+      expect(ast.elements).toHaveLength(2);
+      expect(n.Literal.check(ast.elements[0])).toBe(true);
+      expect(n.Literal.check(ast.elements[1])).toBe(true);
+      expect(ast.elements[0].value).toBe("test");
+      expect(ast.elements[1].value).toBe("x");
     });
 
     // TODO bad cases
@@ -546,7 +505,7 @@ describe("TranslateVisitor", function() {
       };
       var root = new types.NodePath({ root: program }).get("root");
 
-      assert.notOk(isCommentedWithSuppressError(root, comments));
+      expect(isCommentedWithSuppressError(root, comments)).toBe(false);
     });
 
     /**
@@ -571,7 +530,7 @@ describe("TranslateVisitor", function() {
 
       var root = new types.NodePath({ root: program }).get("root");
 
-      assert.ok(isCommentedWithSuppressError(root, comments));
+      expect(isCommentedWithSuppressError(root, comments)).toBe(true);
     });
 
     /**
@@ -601,9 +560,9 @@ describe("TranslateVisitor", function() {
       };
 
       var root = new types.NodePath({ root: program }).get("root");
-      assert.ok(
+      expect(
         isCommentedWithSuppressError(root.get("body").get(0), comments)
-      );
+      ).toBe(true);
     });
 
     /**
@@ -642,7 +601,7 @@ describe("TranslateVisitor", function() {
 
       var root = new types.NodePath({ root: program }).get("root");
 
-      assert.ok(
+      expect(
         isCommentedWithSuppressError(
           root
             .get("body")
@@ -651,7 +610,7 @@ describe("TranslateVisitor", function() {
             .get(0),
           comments
         )
-      );
+      ).toBe(true);
     });
 
     /**
@@ -690,9 +649,9 @@ describe("TranslateVisitor", function() {
 
       var root = new types.NodePath({ root: program }).get("root");
 
-      assert.notOk(
+      expect(
         isCommentedWithSuppressError(root.get("body").get(0), comments)
-      );
+      ).toBe(false);
     });
   });
 });
