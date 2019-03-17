@@ -1,5 +1,4 @@
-var assert = require("chai").assert,
-  filters = require("../../dist/html/ng-filters");
+const filters = require("../../dist/html/ng-filters");
 
 describe("the filter expression matches angular-filters anywhere in the code using {{}}", function() {
   "use strict";
@@ -7,7 +6,7 @@ describe("the filter expression matches angular-filters anywhere in the code usi
   it("matches a simple translate filter", function() {
     var result = filters.matchAngularExpressions("{{ 'Hy' | translate }}");
 
-    assert.deepEqual(result, [
+    expect(result).toEqual([
       {
         value: "'Hy'",
         match: "{{ 'Hy' | translate }}",
@@ -21,7 +20,7 @@ describe("the filter expression matches angular-filters anywhere in the code usi
       "{{ 'Hy' | currency | translate }}"
     );
 
-    assert.deepEqual(result, [
+    expect(result).toEqual([
       {
         value: "'Hy'",
         match: "{{ 'Hy' | currency | translate }}",
@@ -35,7 +34,7 @@ describe("the filter expression matches angular-filters anywhere in the code usi
       "{{ 'Hy' | translate | limitTo:6 }}"
     );
 
-    assert.deepEqual(result, [
+    expect(result).toEqual([
       {
         value: "'Hy'",
         match: "{{ 'Hy' | translate | limitTo:6 }}",
@@ -49,7 +48,7 @@ describe("the filter expression matches angular-filters anywhere in the code usi
       "{{ 'Hy' | currency | translate | limitTo:6 }}"
     );
 
-    assert.deepEqual(result, [
+    expect(result).toEqual([
       {
         value: "'Hy'",
         match: "{{ 'Hy' | currency | translate | limitTo:6 }}",
@@ -63,7 +62,7 @@ describe("the filter expression matches angular-filters anywhere in the code usi
       "{{ 'Hy' | translate }}<span title=\"{{ 'Login' | translate}}\"></span>"
     );
 
-    assert.deepEqual(result, [
+    expect(result).toEqual([
       {
         value: "'Hy'",
         match: "{{ 'Hy' | translate }}",
@@ -82,7 +81,7 @@ describe("the filter expression matches angular-filters anywhere in the code usi
       '{{"name"|translate|limitTo:5}}'
     );
 
-    assert.deepEqual(result, [
+    expect(result).toEqual([
       {
         value: '"name"',
         match: '{{"name"|translate|limitTo:5}}',
@@ -96,7 +95,7 @@ describe("the filter expression matches angular-filters anywhere in the code usi
       '{{"name"|currency|translate}}'
     );
 
-    assert.deepEqual(result, [
+    expect(result).toEqual([
       {
         value: '"name"',
         match: '{{"name"|currency|translate}}',
@@ -108,7 +107,7 @@ describe("the filter expression matches angular-filters anywhere in the code usi
   it("matches property expressions", function() {
     var result = filters.matchAngularExpressions("{{user.sex | translate}}");
 
-    assert.deepEqual(result, [
+    expect(result).toEqual([
       {
         value: "user.sex",
         match: "{{user.sex | translate}}",
@@ -122,7 +121,7 @@ describe("the filter expression matches angular-filters anywhere in the code usi
       'Static Text: {{ "CHF" | translate }}'
     );
 
-    assert.deepEqual(result, [
+    expect(result).toEqual([
       {
         value: '"CHF"',
         match: '{{ "CHF" | translate }}',
@@ -134,25 +133,25 @@ describe("the filter expression matches angular-filters anywhere in the code usi
   it("doesn't match an expression without translate filter", function() {
     var result = filters.matchAngularExpressions("{{ 1 + 2 }}");
 
-    assert.deepEqual(result, []);
+    expect(result).toEqual([]);
   });
 
   it("doesn't match single curly braces ", function() {
     var result = filters.matchAngularExpressions("{{ '{{1 + 2}}' }}");
 
-    assert.deepEqual(result, []);
+    expect(result).toEqual([]);
   });
 
   it("doesn't match '| translate", function() {
     var result = filters.matchAngularExpressions("{{| translate}}");
 
-    assert.deepEqual(result, []);
+    expect(result).toEqual([]);
   });
 
   it("doesn't match a string literal that looks like an expression but misses the {}", function() {
     var result = filters.matchAngularExpressions('"value" | translate');
 
-    assert.deepEqual(result, []);
+    expect(result).toEqual([]);
   });
 
   /**
@@ -163,7 +162,7 @@ describe("the filter expression matches angular-filters anywhere in the code usi
       '{{"value|test" | translate}}'
     );
 
-    assert.deepEqual(result, [
+    expect(result).toEqual([
       {
         value: '"value|test"',
         match: '{{"value|test" | translate}}',
