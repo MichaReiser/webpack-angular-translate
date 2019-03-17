@@ -23,26 +23,6 @@ export abstract class HtmlParseContext {
 
   public suppressDynamicTranslationErrors: boolean;
 
-  /**
-   * Is the translate directive applied to the current element (translate element or element with translate attribute)
-   */
-  translateDirective = false;
-
-  /**
-   * Does the element has translate-attr-* attributes?
-   */
-  translateAttributes = true;
-
-  /**
-   * The translation id
-   */
-  translationId: string;
-
-  /**
-   * The default text of the translation
-   */
-  defaultText: string;
-
   enter(
     elementName: string,
     attributes: Attribute[],

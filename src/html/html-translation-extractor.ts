@@ -7,15 +7,16 @@ export interface AngularElement {
   startPosition: number;
 }
 
+export interface TranslationOccurrence {
+  translationId: string;
+  defaultText?: string;
+  position: number;
+}
+
 export interface HtmlTranslationExtractionContext {
   emitError(message: string, position: number): void;
   emitSuppressableError(message: string, position: number): void;
-  registerTranslation(translation: {
-    translationId: string;
-    defaultText?: string;
-    position: number;
-  }): void;
-
+  registerTranslation(translation: TranslationOccurrence): void;
   asHtml(): void;
 }
 

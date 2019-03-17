@@ -1,7 +1,7 @@
 var assert = require("chai").assert;
 var sinon = require("sinon");
 
-const tranlsateDirectiveTranslationExtractor = require("../../dist/html/translate-directive-translation-extractor")
+const translateDirectiveTranslationExtractor = require("../../dist/html/translate-directive-translation-extractor")
   .default;
 var StatefulHtmlParser = require("../../dist/html/translate-html-parser")
   .default;
@@ -113,7 +113,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Failed to extract the angular-translate translations from test.html:1:0: The element '<translate>{{controller.title}}</translate>'  in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
+        "Failed to extract the angular-translate translations from test.html:1:0: The element '<translate>{{controller.title}}</translate>' in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'). This is not supported. To suppress this error add the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
       );
     });
 
@@ -124,7 +124,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Failed to extract the angular-translate translations from test.html:1:0: The element '<translate translate-default='{{controller.title}}'>Simple</translate>'  in 'test.html' uses an angular expression as translation id ('Simple') or as default text ('{{controller.title}}'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
+        "Failed to extract the angular-translate translations from test.html:1:0: The element '<translate translate-default='{{controller.title}}'>Simple</translate>' in 'test.html' uses an angular expression as translation id ('Simple') or as default text ('{{controller.title}}'). This is not supported. To suppress this error add the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
       );
     });
 
@@ -273,7 +273,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Failed to extract the angular-translate translations from test.html:1:0: The element '<div translate='{{controller.title}}'>...</div>'  in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
+        "Failed to extract the angular-translate translations from test.html:1:0: The element '<div translate='{{controller.title}}'>...</div>' in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'). This is not supported. To suppress this error add the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
       );
     });
 
@@ -363,7 +363,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       sinon.assert.calledWith(
         loaderContext.emitError,
-        "Failed to extract the angular-translate translations from test.html:1:0: The element '<div translate='' translate-attr-title='{{controller.title}}'>...</div>'  in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
+        "Failed to extract the angular-translate translations from test.html:1:0: The element '<div translate='' translate-attr-title='{{controller.title}}'>...</div>' in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'). This is not supported. To suppress this error add the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
       );
       assert.notOk(loaderContext.registerTranslation.called);
     });
@@ -542,7 +542,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
   function parse(source) {
     var statefulParser = new StatefulHtmlParser(loaderContext, [
-      tranlsateDirectiveTranslationExtractor
+      translateDirectiveTranslationExtractor
     ]);
     statefulParser.parse(source);
     return statefulParser;

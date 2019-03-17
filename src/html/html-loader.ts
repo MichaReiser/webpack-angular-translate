@@ -2,7 +2,7 @@ import cheerio = require("cheerio");
 import * as loaderUtils from "loader-utils";
 
 import TranslateLoaderContext from "../translate-loader-context";
-import tranlsateDirectiveTranslationExtractor from "./translate-directive-translation-extractor";
+import translateDirectiveTranslationExtractor from "./translate-directive-translation-extractor";
 import StatefulHtmlParser, {
   SUPPRESS_ATTRIBUTE_NAME
 } from "./translate-html-parser";
@@ -63,7 +63,7 @@ function loader(source: string, sourceMaps: any): void | string {
 
   new StatefulHtmlParser(loader, [
     ...translationExtractors,
-    tranlsateDirectiveTranslationExtractor
+    translateDirectiveTranslationExtractor
   ]).parse(source);
 
   let result = source;

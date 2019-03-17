@@ -8,13 +8,12 @@ import { SUPPRESS_ATTRIBUTE_NAME } from "./translate-html-parser";
 
 const translateAttributeRegex = /^translate-attr-.*$/;
 
-export default function tranlsateDirectiveTranslationExtractor(
+export default function translateDirectiveTranslationExtractor(
   element: AngularElement,
   context: HtmlTranslationExtractionContext
 ) {
   let translateDirective: boolean;
   let translationId: string;
-  let defaultText: string;
   const translateAttribute = element.attributes.find(
     attribute => attribute.name === "translate"
   );
@@ -39,10 +38,17 @@ export default function tranlsateDirectiveTranslationExtractor(
       attr => attr.name === "translate-default"
     );
 
-    // TODO make safe
-    translationId =
-      translationId ||
-      (element.texts.length > 0 ? element.texts[0].text : null);
+    if (!translationId) {
+      if (element.texts.length === 1) {
+        translationId = element.texts[0].text;
+      } else if (element.texts.length > 1) {
+        context.emitError(
+          "The element does not specify a translation id but has multiple child text elements. Specify the translation id on the element to define the translation id.",
+          element.startPosition
+        );
+        return;
+      }
+    }
 
     // <any translate='test'></any>
     if (translationId) {
@@ -118,7 +124,7 @@ function handleAngularExpression(
 ) {
   let translationId = expression.value;
   // e.g { translate | var} instead of a string constant
-  if (!(/^".*"$/.test(translationId) || /^.*'$/.test(translationId))) {
+  if (!(/^".*"$/.test(translationId) || /^'.*'$/.test(translationId))) {
     context.emitSuppressableError(
       `A dynamic filter expression is used in the text or an attribute of the element '${context.asHtml()}'. Add the '${SUPPRESS_ATTRIBUTE_NAME}' attribute to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).`,
       position

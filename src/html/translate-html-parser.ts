@@ -7,12 +7,12 @@ import ElementContext, {
 } from "./element-context";
 import {
   HtmlTranslationExtractor,
-  HtmlTranslationExtractionContext
+  HtmlTranslationExtractionContext,
+  TranslationOccurrence
 } from "./html-translation-extractor";
 import TranslateLoaderContext from "../translate-loader-context";
-import { matchAngularExpressions, AngularExpressionMatch } from "./ng-filters";
+import { matchAngularExpressions } from "./ng-filters";
 import { AngularElement } from "./html-translation-extractor";
-import { ContextReplacementPlugin } from "webpack";
 
 export const SUPPRESS_ATTRIBUTE_NAME = "suppress-dynamic-translation-error";
 const angularExpressionRegex = /^{{.*}}$/;
@@ -121,23 +121,19 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
     };
   }
 
-  private registerTranslation(translation: {
-    translationId: string;
-    defaultText?: string;
-    position: number;
-  }) {
+  private registerTranslation(translation: TranslationOccurrence) {
     if (
       isAngularExpression(translation.translationId) ||
       isAngularExpression(translation.defaultText)
     ) {
       this.context.emitSuppressableError(
-        `The element '${this.context.asHtml()}'  in '${
+        `The element '${this.context.asHtml()}' in '${
           this.loader.resource
         }' uses an angular expression as translation id ('${
           translation.translationId
         }') or as default text ('${
           translation.defaultText
-        }'), this is not supported. To suppress this error at the '${SUPPRESS_ATTRIBUTE_NAME}' attribute to the element or any of its parents.`,
+        }'). This is not supported. To suppress this error add the '${SUPPRESS_ATTRIBUTE_NAME}' attribute to the element or any of its parents.`,
         translation.position
       );
       return;
