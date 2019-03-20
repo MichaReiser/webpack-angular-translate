@@ -5,6 +5,8 @@ var TranslateVisitor = require("../../dist/js/translate-visitor").default;
 var isCommentedWithSuppressError = require("../../dist/js/translate-visitor")
   .isCommentedWithSuppressError;
 
+require("../translate-jest-matchers");
+
 describe("TranslateVisitor", function() {
   var loaderContext;
   var visitor;
@@ -13,7 +15,9 @@ describe("TranslateVisitor", function() {
     loaderContext = {
       registerTranslation: jest.fn(),
       pruneTranslations: jest.fn(),
-      emitError: jest.fn()
+      emitError: jest.fn(),
+      context: "path",
+      resourcePath: "path/test.js"
     };
 
     visitor = new TranslateVisitor(loaderContext);
@@ -156,12 +160,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message:
-            "Illegal argument for call to $translate: A call to $translate requires at least one argument that is the translation id. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
-        })
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if the translation id is not an array expression and neither a literal", function() {
@@ -171,12 +170,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message:
-            "Illegal argument for call to $translate: The translation id should either be a string literal or an array containing string literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
-        })
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if any translation id in the passed in array is not a literal", function() {
@@ -188,12 +182,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message:
-            "Illegal argument for call to $translate: The array with the translation ids should only contain literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:0)."
-        })
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if the default text is not a literal", function() {
@@ -208,12 +197,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(translateCall);
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message:
-            "Illegal argument for call to $translate: The default text should be a string literal. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
-        })
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("suppress the call needs at least one argument error if block contains 'suppress-dynamic-translation-error: true' comment", function() {
@@ -366,12 +350,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(registerTranslationCall);
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message:
-            "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (test.js:1:1)."
-        })
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if the translation is not a literal", function() {
@@ -383,12 +362,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(registerTranslationCall);
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message:
-            "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (test.js:1:1)."
-        })
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if the default text is not a literal", function() {
@@ -401,12 +375,7 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(registerTranslationCall);
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message:
-            "Illegal argument for call to i18n.registerTranslation: the default text has to be a literal (test.js:1:1)."
-        })
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
   });
 

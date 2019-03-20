@@ -1,3 +1,4 @@
+import * as path from "path";
 import * as types from "ast-types";
 import {
   CallExpression,
@@ -325,16 +326,14 @@ export default class TranslateVisitor extends types.PathVisitor
    * @param node the node for which a message is emitted
    */
   private throwError(message: string, node: Node): void {
+    const relativePath = path.relative(
+      this.loader.context,
+      this.loader.resourcePath
+    );
     const start = node.loc.start,
-      completeMessage =
-        message +
-        " (" +
-        this.loader.resource +
-        ":" +
-        start.line +
-        ":" +
-        start.column +
-        ").";
+      completeMessage = `${message} (${relativePath}:${start.line}:${
+        start.column
+      })`;
     this.loader.emitError(new Error(completeMessage));
     this.abort();
   }
