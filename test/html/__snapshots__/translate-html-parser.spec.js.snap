@@ -1,0 +1,73 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StatefulHtmlParserSpecs <any attr='{{ any | translate }}'> emits an error if the translate filter is not the first in the filter chain 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: Another filter is used before the translate filter in the element <img src='xz' alt='{{ "title" | uppercase | translate }}'>...</img>. Add the 'suppress-dynamic-translation-error' to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any attr='{{ any | translate }}'> emits an error if the translate filter is used for a dynamic value 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: A dynamic filter expression is used in the text or an attribute of the element '<img src='xz' alt='{{ ctrl.imgAlt | translate }}'>...</img>'. Add the 'suppress-dynamic-translation-error' attribute to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any translate translate-attr-*> emits an error if translate-attr uses an expression 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element '<div translate='' translate-attr-title='{{controller.title}}'>...</div>' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'). This is not supported. Either use a string literal as translation id and default text or suppress this error by adding the 'suppress-dynamic-translation-error' attribute to this element or any of its parents.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any translate> emits an error if a translation does not have a valid id 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: the element uses the translate directive but does not specify a translation id nor has any translated attributes (translate-attr-*). Specify a translation id or remove the translate-directive.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any translate> emits an error if the value of the translate id is an expression 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element '<div translate='{{controller.title}}'>...</div>' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'). This is not supported. Either use a string literal as translation id and default text or suppress this error by adding the 'suppress-dynamic-translation-error' attribute to this element or any of its parents.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <translate> emits an error if the content of the element is an expression 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element '<translate>{{controller.title}}</translate>' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'). This is not supported. Either use a string literal as translation id and default text or suppress this error by adding the 'suppress-dynamic-translation-error' attribute to this element or any of its parents.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <translate> emits an error if the default text is an expression 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element '<translate translate-default='{{controller.title}}'>Simple</translate>' uses an angular expression as translation id ('Simple') or as default text ('{{controller.title}}'). This is not supported. Either use a string literal as translation id and default text or suppress this error by adding the 'suppress-dynamic-translation-error' attribute to this element or any of its parents.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs {{ any | translate }} emits an error if the translate filter is being used for a dynamic value 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:6: A dynamic filter expression is used in the text or an attribute of the element '<root>{{ controller.title | translate }}</root>'. Add the 'suppress-dynamic-translation-error' attribute to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs {{ any | translate }} emits an error if the translate filter is not the first in the filter chain 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:6: Another filter is used before the translate filter in the element <root>{{ 'title' | uppercase | translate }}</root>. Add the 'suppress-dynamic-translation-error' to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).],
+  ],
+]
+`;

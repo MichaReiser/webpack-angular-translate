@@ -1,3 +1,4 @@
+import * as path from "path";
 import { AngularExpressionMatch } from "./ng-filters";
 import TranslateLoaderContext from "../translate-loader-context";
 
@@ -67,11 +68,15 @@ export class DocumentContext extends HtmlParseContext {
 
   emitError(message: string, position: number) {
     const loc = this.loc(position);
-    message = `Failed to extract the angular-translate translations from ${
-      this.loader.resource
-    }:${loc.line}:${loc.column}: ${message}`;
+    const relativePath = path.relative(
+      this.loader.context,
+      this.loader.resourcePath
+    );
+    message = `Failed to extract the angular-translate translations from '${relativePath}':${
+      loc.line
+    }:${loc.column}: ${message}`;
 
-    this.loader.emitError(message);
+    this.loader.emitError(new Error(message));
   }
 
   asHtml(): string {

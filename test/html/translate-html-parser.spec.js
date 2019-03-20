@@ -4,6 +4,8 @@ var StatefulHtmlParser = require("../../dist/html/translate-html-parser")
   .default;
 var Translation = require("../../dist/translation").default;
 
+require("../translate-jest-matchers");
+
 describe("StatefulHtmlParserSpecs", function() {
   "use strict";
 
@@ -14,7 +16,8 @@ describe("StatefulHtmlParserSpecs", function() {
       registerTranslation: jest.fn(),
       emitError: jest.fn(),
       emitWarning: jest.fn(),
-      resource: "test.html"
+      resourcePath: "path/test.html",
+      context: "path"
     };
   });
 
@@ -24,7 +27,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -35,7 +38,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("simple-id", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -46,7 +49,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", "Other default", {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -57,7 +60,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -70,7 +73,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -85,14 +88,14 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Attribute", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Element-Text", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -101,9 +104,7 @@ describe("StatefulHtmlParserSpecs", function() {
     it("emits an error if the content of the element is an expression", function() {
       parse("<translate>{{controller.title}}</translate>");
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        "Failed to extract the angular-translate translations from test.html:1:0: The element '<translate>{{controller.title}}</translate>' in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'). This is not supported. To suppress this error add the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if the default text is an expression", function() {
@@ -111,9 +112,7 @@ describe("StatefulHtmlParserSpecs", function() {
         "<translate translate-default='{{controller.title}}'>Simple</translate>"
       );
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        "Failed to extract the angular-translate translations from test.html:1:0: The element '<translate translate-default='{{controller.title}}'>Simple</translate>' in 'test.html' uses an angular expression as translation id ('Simple') or as default text ('{{controller.title}}'). This is not supported. To suppress this error add the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("suppresses the error if the translation element is an expression and the element is attributed with suppress-dynamic-translation-error", function() {
@@ -141,7 +140,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -152,7 +151,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -163,7 +162,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", "Other default", {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -174,7 +173,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -187,7 +186,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -202,14 +201,14 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Attribute", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Element-Text", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -222,14 +221,14 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Attribute", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Element-Text", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -238,9 +237,7 @@ describe("StatefulHtmlParserSpecs", function() {
     it("emits an error if the value of the translate id is an expression", function() {
       parse("<div translate='{{controller.title}}'></div>");
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        "Failed to extract the angular-translate translations from test.html:1:0: The element '<div translate='{{controller.title}}'>...</div>' in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'). This is not supported. To suppress this error add the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("suppresses the error of a dynamic value in the translation id attribute if the element is attributed with suppress-dynamic-translation-error", function() {
@@ -254,9 +251,7 @@ describe("StatefulHtmlParserSpecs", function() {
     it("emits an error if a translation does not have a valid id", function() {
       parse("<title translate>\n     </title>");
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        "Failed to extract the angular-translate translations from test.html:1:0: the element uses the translate directive but does not specify a translation id nor has any translated attributes (translate-attr-*). Specify a translation id or remove the translate-directive."
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
       // ensure the translation is not registered a second time because of a test if scope.text is falsy (what is the case above).
       expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
     });
@@ -274,7 +269,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("test", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -287,7 +282,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("test", "Default Text", {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -300,7 +295,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("test", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -313,9 +308,7 @@ describe("StatefulHtmlParserSpecs", function() {
         "<div translate translate-attr-title='{{controller.title}}'></div>"
       );
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        "Failed to extract the angular-translate translations from test.html:1:0: The element '<div translate='' translate-attr-title='{{controller.title}}'>...</div>' in 'test.html' uses an angular expression as translation id ('{{controller.title}}') or as default text ('undefined'). This is not supported. To suppress this error add the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
       expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
     });
 
@@ -335,7 +328,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("test", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 6 }
         })
       );
@@ -346,7 +339,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("test", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 6 }
         })
       );
@@ -359,7 +352,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("USD", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 6 }
         })
       );
@@ -368,17 +361,13 @@ describe("StatefulHtmlParserSpecs", function() {
     it("emits an error if the translate filter is being used for a dynamic value", function() {
       parse("<root>{{ controller.title | translate }}</root>");
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        "Failed to extract the angular-translate translations from test.html:1:6: A dynamic filter expression is used in the text or an attribute of the element '<root>{{ controller.title | translate }}</root>'. Add the 'suppress-dynamic-translation-error' attribute to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation)."
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if the translate filter is not the first in the filter chain", function() {
       parse("<root>{{ 'title' | uppercase | translate }}</root>");
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        "Failed to extract the angular-translate translations from test.html:1:6: Another filter is used before the translate filter in the element <root>{{ 'title' | uppercase | translate }}</root>. Add the 'suppress-dynamic-translation-error' to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation)."
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("suppresses the error for a filter with a dynamic value if suppress-dynamic-translate-error is used on the parent element", function() {
@@ -406,7 +395,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Waterfall", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -419,14 +408,14 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Waterfall", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Other", undefined, {
-          resource: "test.html",
+          resource: "path/test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -435,17 +424,13 @@ describe("StatefulHtmlParserSpecs", function() {
     it("emits an error if the translate filter is not the first in the filter chain", function() {
       parse("<img src='xz' alt='{{ \"title\" | uppercase | translate }}' />");
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        "Failed to extract the angular-translate translations from test.html:1:0: Another filter is used before the translate filter in the element <img src='xz' alt='{{ \"title\" | uppercase | translate }}'>...</img>. Add the 'suppress-dynamic-translation-error' to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation)."
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if the translate filter is used for a dynamic value", function() {
       parse("<img src='xz' alt='{{ ctrl.imgAlt | translate }}' />");
 
-      expect(loaderContext.emitError).toHaveBeenCalledWith(
-        "Failed to extract the angular-translate translations from test.html:1:0: A dynamic filter expression is used in the text or an attribute of the element '<img src='xz' alt='{{ ctrl.imgAlt | translate }}'>...</img>'. Add the 'suppress-dynamic-translation-error' attribute to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation)."
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
   });
 

@@ -127,13 +127,11 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
       isAngularExpression(translation.defaultText)
     ) {
       this.context.emitSuppressableError(
-        `The element '${this.context.asHtml()}' in '${
-          this.loader.resource
-        }' uses an angular expression as translation id ('${
+        `The element '${this.context.asHtml()}' uses an angular expression as translation id ('${
           translation.translationId
         }') or as default text ('${
           translation.defaultText
-        }'). This is not supported. To suppress this error add the '${SUPPRESS_ATTRIBUTE_NAME}' attribute to the element or any of its parents.`,
+        }'). This is not supported. Either use a string literal as translation id and default text or suppress this error by adding the '${SUPPRESS_ATTRIBUTE_NAME}' attribute to this element or any of its parents.`,
         translation.position
       );
       return;
@@ -141,7 +139,7 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
 
     this.loader.registerTranslation(
       new Translation(translation.translationId, translation.defaultText, {
-        resource: this.loader.resource,
+        resource: this.loader.resourcePath,
         loc: this.context.loc(translation.position)
       })
     );
