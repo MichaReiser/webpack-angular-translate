@@ -25,7 +25,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -36,7 +36,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("simple-id", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -47,7 +47,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", "Other default", {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -58,7 +58,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -71,7 +71,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -86,14 +86,14 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Attribute", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Element-Text", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -138,7 +138,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -149,7 +149,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -160,7 +160,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", "Other default", {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -171,7 +171,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -184,7 +184,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Simple", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -199,14 +199,14 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Attribute", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Element-Text", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -219,14 +219,14 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Attribute", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Element-Text", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -267,7 +267,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("test", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -280,7 +280,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("test", "Default Text", {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -293,7 +293,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("test", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -326,7 +326,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("test", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 6 }
         })
       );
@@ -337,7 +337,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("test", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 6 }
         })
       );
@@ -350,7 +350,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("USD", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 6 }
         })
       );
@@ -393,7 +393,7 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Waterfall", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
@@ -406,14 +406,14 @@ describe("StatefulHtmlParserSpecs", function() {
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Waterfall", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );
 
       expect(loaderContext.registerTranslation).toHaveBeenCalledWith(
         new Translation("Other", undefined, {
-          resource: "path/test.html",
+          resource: "test.html",
           loc: { line: 1, column: 0 }
         })
       );

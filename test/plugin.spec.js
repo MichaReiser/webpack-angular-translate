@@ -519,17 +519,28 @@ Array [
 });
 
 describe("Plugin", function() {
-  it("emits an error if the same id with different default texts is used", async function() {
+  it.only("emits an error if the same id with different default texts is used", async function() {
     const { translations, stats } = await compileAndGetTranslations(
       "differentDefaultTexts.js"
     );
 
-    // TODO write custom serializer for usage and strip the path
     expect(stats.compilation.errors).toMatchInlineSnapshot(`
 Array [
   [Error: Webpack-Angular-Translate: Two translations with the same id but different default text found.
-	Existing: { id: 'Next', defaultText: 'Weiter', usages: [ /Users/micha/git/webpack-angular-translate/test/cases/differentDefaultTexts.js:5:8 ] }
-	new: { id: 'Next', defaultText: 'Missing', usages: [ /Users/micha/git/webpack-angular-translate/test/cases/differentDefaultTexts.js:6:8 ] }
+	Existing: {
+  "id": "Next",
+  "defaultText": "Weiter",
+  "usages": [
+    "differentDefaultTexts.js:5:8"
+  ]
+}
+	New: {
+  "id": "Next",
+  "defaultText": "Missing",
+  "usages": [
+    "differentDefaultTexts.js:6:8"
+  ]
+}
 	Please define the same default text twice or specify the default text only once.],
 ]
 `);

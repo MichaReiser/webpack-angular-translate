@@ -7,7 +7,17 @@ expect.addSnapshotSerializer({
     return value instanceof Error && typeof value.error === "object";
   },
   print(value, serialize) {
-    return `${value.name}: ${serialize(value.error.message)}`;
+    return `${value.name}: ${serialize(value.error)}`;
+  }
+});
+
+// Matches the empty error where we need to remove the absolute paths
+expect.addSnapshotSerializer({
+  test(value) {
+    return value instanceof Error && typeof value.error === "object";
+  },
+  print(value, serialize) {
+    return `${value.name}: ${serialize(value.error)}`;
   }
 });
 

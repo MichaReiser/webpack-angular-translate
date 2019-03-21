@@ -1,5 +1,5 @@
 // TODO for some reasons the tests start to fail if importedf rom src
-import { DocumentContext } from "../../dist/html/element-context";
+import { DocumentContext } from "../../src/html/element-context";
 
 describe("ElementContext", function() {
   "use strict";

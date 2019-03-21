@@ -76,33 +76,72 @@ describe("TranslationsRegistry", function() {
         registry.registerTranslation(
           createTranslation("test", "Other default text", 10)
         );
-      }).toThrowError(
-        "Webpack-Angular-Translate: Two translations with the same id but different default text found.\n\tExisting: { id: 'test', defaultText: 'Test', usages: [ test.js:1:1 ] }\n\tnew: { id: 'test', defaultText: 'Other default text', usages: [ test.js:10:1 ] }\n\tPlease define the same default text twice or specify the default text only once."
-      );
+      }).toThrowErrorMatchingInlineSnapshot(`
+"Webpack-Angular-Translate: Two translations with the same id but different default text found.
+	Existing: {
+  \\"id\\": \\"test\\",
+  \\"defaultText\\": \\"Test\\",
+  \\"usages\\": [
+    \\"test.js:1:1\\"
+  ]
+}
+	New: {
+  \\"id\\": \\"test\\",
+  \\"defaultText\\": \\"Other default text\\",
+  \\"usages\\": [
+    \\"test.js:10:1\\"
+  ]
+}
+	Please define the same default text twice or specify the default text only once."
+`);
     });
 
     it("throws if the translation id is an empty string", function() {
       expect(function() {
         registry.registerTranslation(createTranslation(""));
-      }).toThrowError(
-        "Invalid angular-translate translation '{ id: '', defaultText: 'undefined', usages: [ test.js:1:1 ] }' found. The id of the translation is empty, consider removing the translate attribute (html) or defining the translation id (js)."
-      );
+      }).toThrowErrorMatchingInlineSnapshot(`
+"Invalid angular-translate translation found: The id of the translation is empty. Consider removing the translate attribute (html) or defining the translation id (js).
+Translation:
+'{
+  \\"id\\": \\"\\",
+  \\"defaultText\\": null,
+  \\"usages\\": [
+    \\"test.js:1:1\\"
+  ]
+}'"
+`);
     });
 
     it("throws if the translation id is undefined", function() {
       expect(function() {
         registry.registerTranslation(createTranslation());
-      }).toThrowError(
-        "Invalid angular-translate translation '{ id: 'undefined', defaultText: 'undefined', usages: [ test.js:1:1 ] }' found. The id of the translation is empty, consider removing the translate attribute (html) or defining the translation id (js)."
-      );
+      }).toThrowErrorMatchingInlineSnapshot(`
+"Invalid angular-translate translation found: The id of the translation is empty. Consider removing the translate attribute (html) or defining the translation id (js).
+Translation:
+'{
+  \\"id\\": null,
+  \\"defaultText\\": null,
+  \\"usages\\": [
+    \\"test.js:1:1\\"
+  ]
+}'"
+`);
     });
 
     it("throws if the translation id is null", function() {
       expect(function() {
         registry.registerTranslation(createTranslation(null));
-      }).toThrowError(
-        "Invalid angular-translate translation '{ id: 'null', defaultText: 'undefined', usages: [ test.js:1:1 ] }' found. The id of the translation is empty, consider removing the translate attribute (html) or defining the translation id (js)."
-      );
+      }).toThrowErrorMatchingInlineSnapshot(`
+"Invalid angular-translate translation found: The id of the translation is empty. Consider removing the translate attribute (html) or defining the translation id (js).
+Translation:
+'{
+  \\"id\\": null,
+  \\"defaultText\\": null,
+  \\"usages\\": [
+    \\"test.js:1:1\\"
+  ]
+}'"
+`);
     });
   });
 

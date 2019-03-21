@@ -17,7 +17,7 @@ describe("TranslateVisitor", function() {
       emitError: jest.fn(),
       context: "path",
       resourcePath: "path/test.js",
-      resource: "path/test.js"
+      resource: "test.js"
     };
 
     visitor = createTranslateVisitor(loaderContext);
@@ -41,7 +41,7 @@ describe("TranslateVisitor", function() {
         defaultText: undefined,
         usages: [
           {
-            resource: "path/test.js",
+            resource: "test.js",
             loc: { line: 1, column: 1 }
           }
         ]
@@ -64,7 +64,7 @@ describe("TranslateVisitor", function() {
         defaultText: "Test",
         usages: [
           {
-            resource: "path/test.js",
+            resource: "test.js",
             loc: { line: 1, column: 1 }
           }
         ]
@@ -84,7 +84,7 @@ describe("TranslateVisitor", function() {
         defaultText: undefined,
         usages: [
           {
-            resource: "path/test.js",
+            resource: "test.js",
             loc: { line: 1, column: 1 }
           }
         ]
@@ -95,7 +95,7 @@ describe("TranslateVisitor", function() {
         defaultText: undefined,
         usages: [
           {
-            resource: "path/test.js",
+            resource: "test.js",
             loc: { line: 1, column: 1 }
           }
         ]
@@ -117,7 +117,7 @@ describe("TranslateVisitor", function() {
         defaultText: undefined,
         usages: [
           {
-            resource: "path/test.js",
+            resource: "test.js",
             loc: { line: 1, column: 1 }
           }
         ]
@@ -139,7 +139,7 @@ describe("TranslateVisitor", function() {
         defaultText: undefined,
         usages: [
           {
-            resource: "path/test.js",
+            resource: "test.js",
             loc: { line: 1, column: 1 }
           }
         ]
@@ -291,7 +291,7 @@ describe("TranslateVisitor", function() {
         defaultText: undefined,
         usages: [
           {
-            resource: "path/test.js",
+            resource: "test.js",
             loc: { line: 1, column: 1 }
           }
         ]
@@ -316,7 +316,7 @@ describe("TranslateVisitor", function() {
         defaultText: "default Text",
         usages: [
           {
-            resource: "path/test.js",
+            resource: "test.js",
             loc: { line: 1, column: 1 }
           }
         ]
@@ -402,7 +402,7 @@ describe("TranslateVisitor", function() {
         defaultText: "Test",
         usages: [
           {
-            resource: "path/test.js",
+            resource: "test.js",
             loc: { line: 1, column: 1 }
           }
         ]
@@ -413,7 +413,7 @@ describe("TranslateVisitor", function() {
         defaultText: "X",
         usages: [
           {
-            resource: "path/test.js",
+            resource: "test.js",
             loc: { line: 1, column: 1 }
           }
         ]

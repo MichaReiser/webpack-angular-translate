@@ -1,3 +1,4 @@
+import * as path from "path";
 import * as htmlparser from "htmlparser2";
 
 import Translation from "../translation";
@@ -139,7 +140,7 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
 
     this.loader.registerTranslation(
       new Translation(translation.translationId, translation.defaultText, {
-        resource: this.loader.resourcePath,
+        resource: path.relative(this.loader.context, this.loader.resourcePath),
         loc: this.context.loc(translation.position)
       })
     );

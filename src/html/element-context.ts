@@ -22,7 +22,8 @@ export abstract class HtmlParseContext {
    */
   readonly texts: Text[] = [];
 
-  public suppressDynamicTranslationErrors: boolean;
+  public abstract get suppressDynamicTranslationErrors(): boolean;
+  public abstract set suppressDynamicTranslationErrors(value: boolean);
 
   enter(
     elementName: string,
@@ -54,12 +55,13 @@ export abstract class HtmlParseContext {
 }
 
 export class DocumentContext extends HtmlParseContext {
+  public suppressDynamicTranslationErrors = false;
+
   constructor(
     private readonly loader: TranslateLoaderContext,
     private readonly html: string
   ) {
     super();
-    this.suppressDynamicTranslationErrors = false;
   }
 
   leave(): never {
