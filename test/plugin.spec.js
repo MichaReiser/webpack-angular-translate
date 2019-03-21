@@ -519,7 +519,7 @@ Array [
 });
 
 describe("Plugin", function() {
-  it.only("emits an error if the same id with different default texts is used", async function() {
+  it("emits an error if the same id with different default texts is used", async function() {
     const { translations, stats } = await compileAndGetTranslations(
       "differentDefaultTexts.js"
     );
@@ -553,10 +553,19 @@ Array [
     );
     expect(stats.compilation.warnings).toHaveLength(1);
 
-    var warning = stats.compilation.warnings[0];
-    expect(warning.message).toMatch(
-      /^Invalid angular-translate translation '\{ id: '', defaultText: 'undefined', usages: \[ .+\/test\/cases\/emptyTranslate.html:5:8 ] }' found\. The id of the translation is empty, consider removing the translate attribute \(html\) or defining the translation id \(js\)\.$/
-    );
+    expect(stats.compilation.warnings).toMatchInlineSnapshot(`
+Array [
+  [Error: Invalid angular-translate translation found: The id of the translation is empty. Consider removing the translate attribute (html) or defining the translation id (js).
+Translation:
+'{
+  "id": "",
+  "defaultText": null,
+  "usages": [
+    "emptyTranslate.html:5:8"
+  ]
+}'],
+]
+`);
 
     expect(translations).toEqual({});
   });

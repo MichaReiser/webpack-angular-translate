@@ -17,7 +17,7 @@ expect.addSnapshotSerializer({
     return value instanceof Error && typeof value.error === "object";
   },
   print(value, serialize) {
-    return `${value.name}: ${serialize(value.error)}`;
+    return `${value.name}: ${serialize(value.error.message)}`;
   }
 });
 
