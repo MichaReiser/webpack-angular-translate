@@ -1,3 +1,4 @@
+import * as path from "path";
 import * as escodegen from "escodegen";
 import * as acorn from "acorn";
 import { CodeWithSourceMap, SourceMapConsumer } from "source-map";
@@ -63,7 +64,7 @@ async function extractTranslations(
   const options: LoaderOptions = loaderUtils.getOptions(loader) || {};
   const parserOptions = options.parserOptions || {};
 
-  loader.pruneTranslations(loader.resource);
+  loader.pruneTranslations(path.relative(loader.context, loader.resourcePath));
 
   const visitor = createTranslateVisitor(loader, parserOptions);
   const sourceAst = acorn.parse(source, visitor.options);

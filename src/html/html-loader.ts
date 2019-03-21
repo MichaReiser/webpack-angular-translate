@@ -1,4 +1,5 @@
-import cheerio = require("cheerio");
+import * as path from "path";
+import * as cheerio from "cheerio";
 import * as loaderUtils from "loader-utils";
 
 import TranslateLoaderContext from "../translate-loader-context";
@@ -56,7 +57,7 @@ function loader(source: string, sourceMaps: any): void | string {
     this.cacheable();
   }
 
-  loader.pruneTranslations(loader.resource);
+  loader.pruneTranslations(path.relative(loader.context, loader.resourcePath));
 
   const options = loaderUtils.getOptions(loader) || {};
   const translationExtractors = options.translationExtractors || [];
