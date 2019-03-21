@@ -214,14 +214,12 @@ export default function createTranslateVisitor(
     defaultText: any,
     node: Node
   ): Translation {
-    return new Translation(
-      valueToString(translationId),
-      valueToString(defaultText),
-      {
-        resource: loader.resource,
-        loc: node.loc.start
-      }
-    );
+    const idAsString = valueToString(translationId, "");
+    const defaultTextAsString = valueToString(defaultText, undefined);
+    return new Translation(idAsString, defaultTextAsString, {
+      resource: path.relative(loader.context, loader.resourcePath),
+      loc: node.loc!.start
+    });
   }
 
   /**
@@ -229,7 +227,7 @@ export default function createTranslateVisitor(
    * @param call the call expression
    * @returns {string} the name of the function
    */
-  function getFunctionName(call: CallExpression): string {
+  function getFunctionName(call: CallExpression): string | undefined {
     var callee = call.callee;
     if (n.Identifier.check(callee)) {
       return (<Identifier>callee).name;
@@ -251,7 +249,7 @@ export default function createTranslateVisitor(
    * @param call the call expression
    * @returns {string} the name of the callee or null if the name could not be determined
    */
-  function getCalleeName(call: CallExpression): string {
+  function getCalleeName(call: CallExpression): string | null {
     // this.method() or object.method()
     if (call.callee.type === "MemberExpression") {
       const member = <MemberExpression>call.callee;
@@ -278,7 +276,7 @@ export default function createTranslateVisitor(
    */
   function throwError(message: string, node: Node): never {
     const relativePath = path.relative(loader.context, loader.resourcePath);
-    const start = node.loc.start,
+    const start = node.loc!.start,
       completeMessage = `${message} (${relativePath}:${start.line}:${
         start.column
       })`;
@@ -316,9 +314,12 @@ export default function createTranslateVisitor(
     return isCommentedWithSuppressError(path, comments);
   }
 
-  function valueToString(value: any): string {
+  function valueToString<TDefault>(
+    value: any,
+    fallback: TDefault
+  ): string | TDefault {
     if (value === null || typeof value === "undefined") {
-      return undefined;
+      return fallback;
     }
 
     return "" + value;
@@ -398,12 +399,12 @@ export function isCommentedWithSuppressError(
   const suppressCommentExpression = /suppress-dynamic-translation-error:\s*true/;
 
   for (let comment of comments) {
-    if (comment.loc.end.line > path.node.loc.start.line) {
+    if (comment.loc!.end.line > path.node.loc.start.line) {
       return false;
     }
 
     if (
-      comment.loc.start.line >= blockStart.loc.start.line &&
+      comment.loc!.start.line >= blockStart.loc!.start.line &&
       suppressCommentExpression.test(comment.value)
     ) {
       return true;

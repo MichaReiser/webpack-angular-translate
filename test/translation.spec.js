@@ -62,9 +62,16 @@ describe("Translations", function() {
       { resource: "src/login.html", loc: undefined }
     ]);
 
-    expect(translation.toString()).toBe(
-      "{ id: 'hallo', defaultText: 'null', usages: [ src/main.html:10:4, src/login.html:null:null ] }"
-    );
+    expect(translation.toString()).toMatchInlineSnapshot(`
+"{
+  \\"id\\": \\"hallo\\",
+  \\"defaultText\\": null,
+  \\"usages\\": [
+    \\"src/main.html:10:4\\",
+    \\"src/login.html:null:null\\"
+  ]
+}"
+`);
   });
 
   it("text returns the translation id if the translation has no default text", function() {

@@ -1,3 +1,4 @@
+import * as path from "path";
 import cheerio = require("cheerio");
 import * as loaderUtils from "loader-utils";
 
@@ -56,7 +57,7 @@ function loader(source: string, sourceMaps: any): void | string {
     this.cacheable();
   }
 
-  loader.pruneTranslations(loader.resource);
+  loader.pruneTranslations(path.relative(loader.context, loader.resourcePath));
 
   const options = loaderUtils.getOptions(loader) || {};
   const translationExtractors = options.translationExtractors || [];

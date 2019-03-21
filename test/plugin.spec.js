@@ -524,12 +524,23 @@ describe("Plugin", function() {
       "differentDefaultTexts.js"
     );
 
-    // TODO write custom serializer for usage and strip the path
     expect(stats.compilation.errors).toMatchInlineSnapshot(`
 Array [
   [Error: Webpack-Angular-Translate: Two translations with the same id but different default text found.
-	Existing: { id: 'Next', defaultText: 'Weiter', usages: [ /Users/micha/git/webpack-angular-translate/test/cases/differentDefaultTexts.js:5:8 ] }
-	new: { id: 'Next', defaultText: 'Missing', usages: [ /Users/micha/git/webpack-angular-translate/test/cases/differentDefaultTexts.js:6:8 ] }
+	Existing: {
+  "id": "Next",
+  "defaultText": "Weiter",
+  "usages": [
+    "differentDefaultTexts.js:5:8"
+  ]
+}
+	New: {
+  "id": "Next",
+  "defaultText": "Missing",
+  "usages": [
+    "differentDefaultTexts.js:6:8"
+  ]
+}
 	Please define the same default text twice or specify the default text only once.],
 ]
 `);
@@ -542,10 +553,19 @@ Array [
     );
     expect(stats.compilation.warnings).toHaveLength(1);
 
-    var warning = stats.compilation.warnings[0];
-    expect(warning.message).toMatch(
-      /^Invalid angular-translate translation '\{ id: '', defaultText: 'undefined', usages: \[ .+\/test\/cases\/emptyTranslate.html:5:8 ] }' found\. The id of the translation is empty, consider removing the translate attribute \(html\) or defining the translation id \(js\)\.$/
-    );
+    expect(stats.compilation.warnings).toMatchInlineSnapshot(`
+Array [
+  [Error: Invalid angular-translate translation found: The id of the translation is empty. Consider removing the translate attribute (html) or defining the translation id (js).
+Translation:
+'{
+  "id": "",
+  "defaultText": null,
+  "usages": [
+    "emptyTranslate.html:5:8"
+  ]
+}'],
+]
+`);
 
     expect(translations).toEqual({});
   });
