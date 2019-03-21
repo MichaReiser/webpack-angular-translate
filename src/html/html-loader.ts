@@ -1,5 +1,5 @@
 import * as path from "path";
-import cheerio = require("cheerio");
+import * as cheerio from "cheerio";
 import * as loaderUtils from "loader-utils";
 
 import TranslateLoaderContext from "../translate-loader-context";
