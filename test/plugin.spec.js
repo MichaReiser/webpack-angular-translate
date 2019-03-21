@@ -1,12 +1,15 @@
-const webpack = require("webpack");
-const deepExtend = require("deep-extend");
-const WebPackAngularTranslate = require("../dist/index.js");
-const { Volume, createFsFromVolume } = require("memfs");
-const { ufs } = require("unionfs");
-const path = require("path");
-const fs = require("fs");
+import webpack from "webpack";
+import deepExtend from "deep-extend";
+import { Volume, createFsFromVolume } from "memfs";
+import { ufs } from "unionfs";
+import path from "path";
+import fs from "fs";
 
-require("./translate-jest-matchers");
+// The main plugin can not be imported from the typescript source
+// because webpack seems to modify the loader path
+import * as WebPackAngularTranslate from "../dist/index";
+
+import "./translate-jest-matchers";
 
 /**
  * Helper function to implement tests that verify the result in the translations.js
@@ -580,7 +583,7 @@ Array [
 
         if (firstRun) {
           if (stats.compilation.errors.length > 0) {
-            return reject(status.compilation.errors);
+            return reject(stats.compilation.errors);
           }
 
           firstRun = false;

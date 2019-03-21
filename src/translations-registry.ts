@@ -25,10 +25,7 @@ export class EmptyTranslationIdError extends TranslationRegistrationError {
 }
 
 export class TranslationMergeError extends TranslationRegistrationError {
-  constructor(
-    private existing: Translation,
-    private newTranslation: Translation
-  ) {
+  constructor(existing: Translation, newTranslation: Translation) {
     super(
       `Webpack-Angular-Translate: Two translations with the same id but different default text found.\n\tExisting: ${existing}\n\tnew: ${newTranslation}\n\tPlease define the same default text twice or specify the default text only once.`
     );

@@ -1,5 +1,5 @@
-var DocumentContext = require("../../dist/html/element-context")
-  .DocumentContext;
+// TODO for some reasons the tests start to fail if importedf rom src
+import { DocumentContext } from "../../dist/html/element-context";
 
 describe("ElementContext", function() {
   "use strict";

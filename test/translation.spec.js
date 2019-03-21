@@ -1,4 +1,4 @@
-var Translation = require("../dist/translation").Translation;
+import { Translation } from "../src/translation";
 
 describe("Translations", function() {
   "use strict";

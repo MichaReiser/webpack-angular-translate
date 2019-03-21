@@ -6,12 +6,11 @@
     "noImplicitAny": true,
     "outDir": "dist",
     "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "lib": ["es2015"]
   },
-  "files": [
-    "src/index.ts",
-    "src/html/html-loader.ts",
-    "src/js/js-loader.ts",
-    "typings/ast-types.d.ts"
-  ]
+  "files": ["src/index.ts", "src/html/html-loader.ts", "src/js/js-loader.ts"]
 }

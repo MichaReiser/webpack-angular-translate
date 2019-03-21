@@ -1,15 +1,13 @@
-const translateDirectiveTranslationExtractor = require("../../dist/html/translate-directive-translation-extractor")
-  .default;
-var StatefulHtmlParser = require("../../dist/html/translate-html-parser")
-  .default;
-var Translation = require("../../dist/translation").default;
+import translateDirectiveTranslationExtractor from "../../src/html/translate-directive-translation-extractor";
+import StatefulHtmlParser from "../../src/html/translate-html-parser";
+import Translation from "../../src/translation";
 
 require("../translate-jest-matchers");
 
 describe("StatefulHtmlParserSpecs", function() {
   "use strict";
 
-  var loaderContext;
+  let loaderContext;
 
   beforeEach(function() {
     loaderContext = {
@@ -455,7 +453,7 @@ describe("StatefulHtmlParserSpecs", function() {
   });
 
   function parse(source) {
-    var statefulParser = new StatefulHtmlParser(loaderContext, [
+    let statefulParser = new StatefulHtmlParser(loaderContext, [
       translateDirectiveTranslationExtractor
     ]);
     statefulParser.parse(source);

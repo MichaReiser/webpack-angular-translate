@@ -1,5 +1,6 @@
 import * as path from "path";
-import * as types from "ast-types";
+import types, { NodePath } from "ast-types";
+import { Context } from "ast-types/lib/path-visitor";
 import {
   CallExpression,
   Literal,
@@ -8,111 +9,53 @@ import {
   Identifier,
   Node,
   MemberExpression
-} from "estree";
+} from "ast-types/gen/nodes";
 import Translation from "../translation";
 import TranslateLoaderContext from "../translate-loader-context";
 
-const n = types.namedTypes;
-const b = types.builders;
+const { namedTypes: n, builders: b } = types;
 const TRANSLATE_SERVICE_NAME = "$translate";
 
-export default class TranslateVisitor extends types.PathVisitor
-  implements types.Visitor {
-  changedAst: boolean = false;
-  comments: acorn.Comment[] = [];
-  tokens: acorn.Token[] = [];
-  options: acorn.Options;
-  currentContext: types.Context;
-
-  constructor(
-    private loader: TranslateLoaderContext,
-    parserOptions: acorn.Options = {}
-  ) {
-    super();
-
-    this.options = (Object as any).assign({}, parserOptions, {
-      locations: true,
-      onComment: this.comments,
-      onToken: this.tokens,
-      ranges: true
-    });
-
-    // the function is called with this = Context and not the object itself
-    // rebind to this and save the context in current context
-    const visitor = this;
-    const func = this.visitCallExpression;
-    this.visitCallExpression = function(...args: any[]): boolean {
-      visitor.currentContext = this;
-      return func.apply(visitor, args);
-    };
-  }
-
-  visitCallExpression(path: types.NodePath<CallExpression>): boolean {
-    const call = path.node,
-      functionName = this.getFunctionName(call),
-      calleeName = this.getCalleeName(call);
-
-    try {
-      if (functionName === TRANSLATE_SERVICE_NAME) {
-        this.visitTranslate(path);
-      } else if (
-        functionName === "registerTranslation" &&
-        calleeName === "i18n"
-      ) {
-        this.visitRegisterTranslation(path);
-      } else if (
-        functionName === "registerTranslations" &&
-        calleeName === "i18n"
-      ) {
-        this.visitRegisterTranslations(path);
-      } else if (
-        functionName === "instant" &&
-        calleeName === TRANSLATE_SERVICE_NAME
-      ) {
-        this.visitTranslate(path);
-      } else {
-        this.currentContext.traverse(path);
-      }
-    } catch (e) {
-      if (e instanceof this.AbortRequest) {
-        (e as any).cancel();
-      } else {
-        throw e;
-      }
-    }
-
-    return false;
-  }
+export default function createTranslateVisitor(
+  loader: TranslateLoaderContext,
+  parserOptions: acorn.Options = {}
+) {
+  let context: Context = null;
+  const comments: acorn.Comment[] = [];
+  const options: acorn.Options = {
+    ...parserOptions,
+    locations: true,
+    onComment: comments,
+    // onToken: tokens,
+    ranges: true
+  };
 
   /**
    * Handles a $translate(translateId, interpolateParams, interpolationId, defaultText) call.
    * @param path the path to the call expression
    */
-  private visitTranslate(path: types.NodePath<CallExpression>): void {
-    const call = path.node,
-      args = call.arguments;
+  function visitTranslate(path: NodePath<CallExpression>): void {
+    const call = path.node;
+    const args = call.arguments;
 
     if (args.length < 1) {
-      this.throwSuppressableError(
+      throwSuppressableError(
         `A call to ${TRANSLATE_SERVICE_NAME} requires at least one argument that is the translation id`,
         path
       );
     }
 
-    const translationIds = this.getTranslationIdFromTranslateCall(path);
-    const defaultText = this.getDefaultTextFromTranslateCall(path);
+    const translationIds = getTranslationIdFromTranslateCall(path);
+    const defaultText = getDefaultTextFromTranslateCall(path);
 
-    const translations = translationIds.map(translationId =>
-      this.createTranslation(translationId, defaultText, call)
-    );
-
-    for (const translation of translations) {
-      this.loader.registerTranslation(translation);
+    for (const translationId of translationIds) {
+      const translation = createTranslation(translationId, defaultText, call);
+      loader.registerTranslation(translation);
     }
   }
 
-  private getTranslationIdFromTranslateCall(
-    path: types.NodePath<CallExpression>
+  function getTranslationIdFromTranslateCall(
+    path: NodePath<CallExpression>
   ): any[] {
     const args = path.node.arguments;
 
@@ -126,21 +69,21 @@ export default class TranslateVisitor extends types.PathVisitor
         if (n.Literal.check(element)) {
           return (<Literal>element).value;
         }
-        this.throwSuppressableError(
+        throwSuppressableError(
           "The array with the translation ids should only contain literals",
           path
         );
       });
     }
 
-    this.throwSuppressableError(
+    throwSuppressableError(
       "The translation id should either be a string literal or an array containing string literals",
       path
     );
   }
 
-  private getDefaultTextFromTranslateCall(
-    path: types.NodePath<CallExpression>
+  function getDefaultTextFromTranslateCall(
+    path: NodePath<CallExpression>
   ): any {
     const args = path.node.arguments;
 
@@ -149,7 +92,7 @@ export default class TranslateVisitor extends types.PathVisitor
         return (<Literal>args[3]).value;
       }
 
-      this.throwSuppressableError(
+      throwSuppressableError(
         "The default text should be a string literal",
         path
       );
@@ -164,12 +107,12 @@ export default class TranslateVisitor extends types.PathVisitor
    * translation id.
    * @param path of the call expression.
    */
-  private visitRegisterTranslation(path: types.NodePath<CallExpression>): void {
+  function visitRegisterTranslation(path: NodePath<CallExpression>): void {
     const call = path.node,
       args = call.arguments;
 
     if (args.length === 0 || !n.Literal.check(args[0])) {
-      this.throwError(
+      throwError(
         "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal",
         call
       );
@@ -182,29 +125,25 @@ export default class TranslateVisitor extends types.PathVisitor
       if (n.Literal.check(args[1])) {
         defaultText = <string>(<Literal>args[1]).value;
       } else {
-        this.throwError(
+        throwError(
           "Illegal argument for call to i18n.registerTranslation: the default text has to be a literal",
           call
         );
       }
     }
 
-    const translation = this.createTranslation(
-      translationId,
-      defaultText,
-      call
-    );
+    const translation = createTranslation(translationId, defaultText, call);
 
-    this.loader.registerTranslation(translation);
+    loader.registerTranslation(translation);
     path.replace(b.literal(translation.id));
-    this.changedAst = true;
+    context.reportChanged();
   }
 
   /**
    * Handles a call to i18n.registerTranslations({ translationId: defaultText }).
    * @param path the path to the call expression
    */
-  private visitRegisterTranslations(path: types.NodePath<any>): void {
+  function visitRegisterTranslations(path: NodePath<any>): void {
     const call = path.node,
       args = call.arguments,
       translationsArgument = args.length === 0 ? null : args[0];
@@ -213,7 +152,7 @@ export default class TranslateVisitor extends types.PathVisitor
       translationsArgument === null ||
       !n.ObjectExpression.check(translationsArgument)
     ) {
-      this.throwError(
+      throwError(
         "Illegal argument for call to i18n.registerTranslations: requires a single argument that is an object where the key is the translationId and the value is the default text",
         call
       );
@@ -225,12 +164,24 @@ export default class TranslateVisitor extends types.PathVisitor
       let translationId: any;
       let defaultText: any;
 
+      if (
+        property.type === "SpreadElement" ||
+        property.type === "SpreadProperty" ||
+        property.type === "ObjectMethod"
+      ) {
+        throwError(
+          "Illegal argument for call to i18n.registerTranslations: The passed object contains a spread property, spread element, or method. This is not supported.",
+          property
+        );
+        return;
+      }
+
       if (n.Identifier.check(property.key)) {
         translationId = (<Identifier>property.key).name;
       } else if (n.Literal.check(property.key)) {
         translationId = (<Literal>property.key).value;
       } else {
-        this.throwError(
+        throwError(
           "Illegal argument for call to i18n.registerTranslations: The key needs to be a literal or an identifier.",
           call
         );
@@ -239,35 +190,35 @@ export default class TranslateVisitor extends types.PathVisitor
       if (n.Literal.check(property.value)) {
         defaultText = (<Literal>property.value).value;
       } else {
-        this.throwError(
+        throwError(
           `Illegal argument for call to i18n.registerTranslations: The value for the key '${translationId}' needs to be a literal`,
           call
         );
       }
 
-      return this.createTranslation(translationId, defaultText, call);
-    }, this);
+      return createTranslation(translationId, defaultText, call);
+    });
 
     for (const translation of translations) {
-      this.loader.registerTranslation(translation);
+      loader.registerTranslation(translation);
     }
     const ids = b.arrayExpression(
       translations.map(translation => b.literal(translation.id))
     );
     path.replace(ids);
-    this.changedAst = true;
+    context.reportChanged();
   }
 
-  private createTranslation(
+  function createTranslation(
     translationId: any,
     defaultText: any,
     node: Node
   ): Translation {
     return new Translation(
-      this.valueToString(translationId),
-      this.valueToString(defaultText),
+      valueToString(translationId),
+      valueToString(defaultText),
       {
-        resource: this.loader.resource,
+        resource: loader.resource,
         loc: node.loc.start
       }
     );
@@ -278,7 +229,7 @@ export default class TranslateVisitor extends types.PathVisitor
    * @param call the call expression
    * @returns {string} the name of the function
    */
-  private getFunctionName(call: CallExpression): string {
+  function getFunctionName(call: CallExpression): string {
     var callee = call.callee;
     if (n.Identifier.check(callee)) {
       return (<Identifier>callee).name;
@@ -300,7 +251,7 @@ export default class TranslateVisitor extends types.PathVisitor
    * @param call the call expression
    * @returns {string} the name of the callee or null if the name could not be determined
    */
-  private getCalleeName(call: CallExpression): string {
+  function getCalleeName(call: CallExpression): string {
     // this.method() or object.method()
     if (call.callee.type === "MemberExpression") {
       const member = <MemberExpression>call.callee;
@@ -325,17 +276,14 @@ export default class TranslateVisitor extends types.PathVisitor
    * @param message the message to emit
    * @param node the node for which a message is emitted
    */
-  private throwError(message: string, node: Node): void {
-    const relativePath = path.relative(
-      this.loader.context,
-      this.loader.resourcePath
-    );
+  function throwError(message: string, node: Node): never {
+    const relativePath = path.relative(loader.context, loader.resourcePath);
     const start = node.loc.start,
       completeMessage = `${message} (${relativePath}:${start.line}:${
         start.column
       })`;
-    this.loader.emitError(new Error(completeMessage));
-    this.abort();
+    loader.emitError(new Error(completeMessage));
+    throw context.abort();
   }
 
   /**
@@ -345,21 +293,18 @@ export default class TranslateVisitor extends types.PathVisitor
    * @param message the message to emit
    * @param path the path of the node to which the error belongs
    */
-  private throwSuppressableError(
-    message: string,
-    path: types.NodePath<any>
-  ): void {
+  function throwSuppressableError(message: string, path: NodePath<any>): void {
     const call = path.node,
-      calleeName = this.getCalleeName(call),
-      functionName = this.getFunctionName(call),
+      calleeName = getCalleeName(call),
+      functionName = getFunctionName(call),
       completeFunctionName =
         (calleeName ? calleeName + "." : "") + functionName,
       completeMessage = `Illegal argument for call to ${completeFunctionName}: ${message}. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error.`;
 
-    if (!this.isCommentedWithSuppressErrors(path)) {
-      this.throwError(completeMessage, call);
+    if (!isCommentedWithSuppressErrors(path)) {
+      throwError(completeMessage, call);
     }
-    this.abort();
+    context.abort();
   }
 
   /**
@@ -367,21 +312,74 @@ export default class TranslateVisitor extends types.PathVisitor
    * @param path the path to check
    * @returns {boolean} {@code true} if the current block contains such a comment, otherwise false
    */
-  private isCommentedWithSuppressErrors(path: types.NodePath<any>): boolean {
-    return isCommentedWithSuppressError(path, this.comments);
+  function isCommentedWithSuppressErrors(path: NodePath<any>): boolean {
+    return isCommentedWithSuppressError(path, comments);
   }
 
-  private valueToString(value: any): string {
+  function valueToString(value: any): string {
     if (value === null || typeof value === "undefined") {
       return undefined;
     }
 
     return "" + value;
   }
+
+  const visitor = types.PathVisitor.fromMethodsObject({
+    visitCallExpression(path: NodePath<CallExpression>): boolean {
+      context = this;
+      const call = path.node,
+        functionName = getFunctionName(call),
+        calleeName = getCalleeName(call);
+
+      try {
+        if (functionName === TRANSLATE_SERVICE_NAME) {
+          visitTranslate(path);
+        } else if (
+          functionName === "registerTranslation" &&
+          calleeName === "i18n"
+        ) {
+          visitRegisterTranslation(path);
+        } else if (
+          functionName === "registerTranslations" &&
+          calleeName === "i18n"
+        ) {
+          visitRegisterTranslations(path);
+        } else if (
+          functionName === "instant" &&
+          calleeName === TRANSLATE_SERVICE_NAME
+        ) {
+          visitTranslate(path);
+        } else {
+          context.traverse(path);
+        }
+      } catch (e) {
+        if (e instanceof context.AbortRequest) {
+          (e as any).cancel();
+        } else {
+          throw e;
+        }
+      }
+
+      return false;
+    }
+  });
+
+  return {
+    get changedAst() {
+      return visitor.wasChangeReported();
+    },
+
+    comments,
+    options,
+
+    visit(ast: any) {
+      return visitor.visit(ast);
+    }
+  };
 }
 
 export function isCommentedWithSuppressError(
-  path: types.NodePath<any>,
+  path: NodePath<any>,
   comments: acorn.Comment[]
 ): boolean {
   let blockStartPath = path;

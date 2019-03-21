@@ -1,5 +1,5 @@
-var Translation = require("../dist/translation").default;
-var TranslationsRegistry = require("../dist/translations-registry").default;
+import Translation from "../src/translation";
+import TranslationsRegistry from "../dist/translations-registry";
 
 describe("TranslationsRegistry", function() {
   "use strict";

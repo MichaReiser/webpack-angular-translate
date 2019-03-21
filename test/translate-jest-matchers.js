@@ -1,4 +1,4 @@
-const snapshot = require("jest-snapshot");
+import { toMatchSnapshot } from "jest-snapshot";
 
 // webpack uses special errors that store the original error message
 // in error.error.message. This serilaizer unwraps the webpack errors.
@@ -13,9 +13,6 @@ expect.addSnapshotSerializer({
 
 expect.extend({
   toHaveEmittedErrorMatchingSnapshot(loaderContext) {
-    return snapshot.toMatchSnapshot.call(
-      this,
-      loaderContext.emitError.mock.calls
-    );
+    return toMatchSnapshot.call(this, loaderContext.emitError.mock.calls);
   }
 });
