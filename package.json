@@ -11,9 +11,8 @@
   "scripts": {
     "pretest": "tsc",
     "test": "jest",
-    "start": "mocha --watch './test/**/*.specs.js'",
-    "prepublish": "tsc",
-    "coveralljs": "test --coverage && cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js && rm -rf coverage"
+    "start": "tsc --watch",
+    "prepublish": "tsc"
   },
   "author": "Micha Reiser <micha@famreiser.ch>",
   "license": "MIT",
