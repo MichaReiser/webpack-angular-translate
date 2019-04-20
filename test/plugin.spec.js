@@ -18,13 +18,19 @@ import "./translate-jest-matchers";
  * @param assertCallback {function({}, {})} Callback that contains the assert statements. the first argument
  * is the source of the translations file. The webpack stats (containing warnings and errors) is passed as second argument.
  */
-async function compileAndGetTranslations(fileName, customTranslationExtractors) {
+async function compileAndGetTranslations(
+  fileName,
+  customTranslationExtractors
+) {
   if (!customTranslationExtractors) {
     customTranslationExtractors = [];
   }
-  var options = webpackOptions({
-    entry: ["./test/cases/" + fileName]
-  }, customTranslationExtractors);
+  var options = webpackOptions(
+    {
+      entry: ["./test/cases/" + fileName]
+    },
+    customTranslationExtractors
+  );
 
   const { error, stats, volume } = await compile(options);
   expect(error).toBeFalsy();
@@ -324,21 +330,14 @@ Array [
     "use strict";
 
     const { translations } = await compileAndGetTranslations(
-        "translate-and-i18n.html",
-        [WebPackAngularTranslate.angularI18nTranslationsExtractor]);
-
-    assert.propertyVal(
-        translations,
-        "translateId",
-        "Translate translation"
+      "translate-and-i18n.html",
+      [WebPackAngularTranslate.angularI18nTranslationsExtractor]
     );
 
-    assert.propertyVal(
-        translations,
-        "i18nId",
-        "I18n translation"
-    );
-
+    expect(translations).toMatchObject({
+      translateId: "Translate translation",
+      i18nId: "I18n translation"
+    });
   });
 });
 
