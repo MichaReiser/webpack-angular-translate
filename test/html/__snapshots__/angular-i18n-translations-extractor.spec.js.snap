@@ -1,0 +1,89 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StatefulHtmlParserSpecs <any i18n> emits an error if no default translation is provided 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element <div i18n='@@Simple Case id'>...</div> with attribute  i18n is empty and is therefore missing the default translation.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any i18n> emits an error if the attribute value contains an empty id 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The attribute i18n on element <div i18n='@@'>Simple case</div> defines an empty ID.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any i18n> emits an error if the attribute value does not contain the id indicator '@@'. 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The attribute i18n on element <div i18n='Simple Case id'>Simple case</div> attribute is missing the custom id indicator '@@'.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any i18n> emits an error if the content of the element is an expression 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element '<div i18n='@@Simple Case id'>{{someValue}}</div>' uses an angular expression as translation id ('Simple Case id') or as default text ('{{someValue}}'). This is not supported. Either use a string literal as translation id and default text or suppress this error by adding the 'suppress-dynamic-translation-error' attribute to this element or any of its parents.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any i18n> emits an error if the value of the translate id is an expression 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element '<div i18n='@@{{id}}'>Not an expression</div>' uses an angular expression as translation id ('{{id}}') or as default text ('Not an expression'). This is not supported. Either use a string literal as translation id and default text or suppress this error by adding the 'suppress-dynamic-translation-error' attribute to this element or any of its parents.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any i18n-*> emits an error if no corresponding attribute [attr] exist for the i18n-[attr] attribute 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element <div i18n-title='@@test attribute id'>...</div> with i18n-title is missing a corresponding title attribute.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any i18n-*> emits an error if the attribute value contains an empty id 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The attribute i18n-title on element <div i18n-title='@@' title='test attribute'>...</div> defines an empty ID.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any i18n-*> emits an error if the attribute value does not contain the id indicator '@@'. 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The attribute i18n-title on element <div i18n-title='test attribute id' title='test attribute'>...</div> attribute is missing the custom id indicator '@@'.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any i18n-*> emits an error if the corresponding attribute [attr] is empty 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element <div i18n-title='@@test attribute id' title=''>...</div> with i18n-title is missing a value for the corresponding title attribute.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any i18n-*> emits an error if the default translation is an expression 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element '<div i18n-title='@@myTitle' title='{{myTitle}}'>...</div>' uses an angular expression as translation id ('myTitle') or as default text ('{{myTitle}}'). This is not supported. Either use a string literal as translation id and default text or suppress this error by adding the 'suppress-dynamic-translation-error' attribute to this element or any of its parents.],
+  ],
+]
+`;
+
+exports[`StatefulHtmlParserSpecs <any i18n-*> emits an error if the i18n-[attr] uses an expression as id 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element '<div i18n-title='@@{{id}}' title='My title'>...</div>' uses an angular expression as translation id ('{{id}}') or as default text ('My title'). This is not supported. Either use a string literal as translation id and default text or suppress this error by adding the 'suppress-dynamic-translation-error' attribute to this element or any of its parents.],
+  ],
+]
+`;
