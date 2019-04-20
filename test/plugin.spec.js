@@ -1,11 +1,15 @@
-const assert = require("chai").assert;
-const webpack = require("webpack");
-const deepExtend = require("deep-extend");
-const WebPackAngularTranslate = require("../dist/index.js");
-const { Volume, createFsFromVolume } = require("memfs");
-const { ufs } = require("unionfs");
-const path = require("path");
-const fs = require("fs");
+import webpack from "webpack";
+import deepExtend from "deep-extend";
+import { Volume, createFsFromVolume } from "memfs";
+import { ufs } from "unionfs";
+import path from "path";
+import fs from "fs";
+
+// The main plugin can not be imported from the typescript source
+// because webpack seems to modify the loader path
+import * as WebPackAngularTranslate from "../dist/index";
+
+import "./translate-jest-matchers";
 
 /**
  * Helper function to implement tests that verify the result in the translations.js
@@ -23,7 +27,7 @@ async function compileAndGetTranslations(fileName, customTranslationExtractors) 
   }, customTranslationExtractors);
 
   const { error, stats, volume } = await compile(options);
-  assert.notOk(error, JSON.stringify(error));
+  expect(error).toBeFalsy();
 
   var translations = {};
   if (stats.compilation.assets["translations.json"]) {
@@ -122,12 +126,12 @@ describe("HTML Loader", function() {
       }
     });
 
-    assert.isNull(error);
-    assert.equal(stats.compilation.errors.length, 1);
-    assert.include(
-      stats.compilation.errors[0].message,
-      "Module build failed (from ./dist/html/html-loader.js):\nError: The WebpackAngularTranslate plugin is missing. Add the plugin to your webpack configurations 'plugins' section."
-    );
+    expect(error).toBeNull();
+    expect(stats.compilation.errors).toMatchInlineSnapshot(`
+Array [
+  ModuleBuildError: "The WebpackAngularTranslate plugin is missing. Add the plugin to your webpack configurations 'plugins' section.",
+]
+`);
   });
 
   describe("directive", function() {
@@ -136,84 +140,86 @@ describe("HTML Loader", function() {
     it("extracts the translation id if translate is used as attribute", async function() {
       const { translations } = await compileAndGetTranslations("simple.html");
 
-      assert.propertyVal(
-        translations,
-        "attribute-translation",
-        "attribute-translation"
-      );
+      expect(translations).toMatchObject({
+        "attribute-translation": "attribute-translation"
+      });
     });
 
     it("extracts the translation id if translate is used as element", async function() {
       const { translations } = await compileAndGetTranslations("simple.html");
-      assert.propertyVal(
-        translations,
-        "element-translation",
-        "element-translation"
-      );
+      expect(translations).toMatchObject({
+        "element-translation": "element-translation"
+      });
     });
 
     it("extracts the translation id from the attribute if specified", async function() {
       const { translations } = await compileAndGetTranslations("simple.html");
-      assert.propertyVal(translations, "id-in-attribute", "id-in-attribute");
+      expect(translations).toMatchObject({
+        "id-in-attribute": "id-in-attribute"
+      });
     });
 
     it("extracts the default text if translate is used as attribute", async function() {
       const { translations } = await compileAndGetTranslations(
         "defaultText.html"
       );
-      assert.propertyVal(translations, "Login", "Anmelden");
+      expect(translations).toMatchObject({ Login: "Anmelden" });
     });
 
     it("extracts the default text if translate is used as element", async function() {
       const { translations } = await compileAndGetTranslations(
         "defaultText.html"
       );
-      assert.propertyVal(translations, "Logout", "Abmelden");
+
+      expect(translations).toMatchObject({ Logout: "Abmelden" });
     });
 
     it("extracts the translation id if a translation for an attribute is defined", async function() {
       const { translations } = await compileAndGetTranslations(
         "attributes.html"
       );
-      assert.propertyVal(translations, "attribute-id", "attribute-id");
+      expect(translations).toMatchObject({
+        "attribute-id": "attribute-id"
+      });
     });
 
     it("extracts the default text for an attribute translation", async function() {
       const { translations } = await compileAndGetTranslations(
         "attributes.html"
       );
-      assert.propertyVal(
-        translations,
-        "attribute-default-id",
-        "Default text for attribute title"
-      );
+      expect(translations).toMatchObject({
+        "attribute-default-id": "Default text for attribute title"
+      });
     });
 
     it("emits an error if an angular expression is used as attribute id", async function() {
       const { stats } = await compileAndGetTranslations("expressions.html");
-      assert.lengthOf(
-        stats.compilation.errors,
-        1,
-        "an error should have been emitted for the used angular expression as attribute id"
+
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`
+Array [
+  ModuleError: "Failed to extract the angular-translate translations from 'expressions.html':8:1: The element '<h1 translate=''>{{editCtrl.title}}</h1>' uses an angular expression as translation id ('{{editCtrl.title}}') or as default text ('undefined'). This is not supported. Either use a string literal as translation id and default text or suppress this error by adding the 'suppress-dynamic-translation-error' attribute to this element or any of its parents.",
+]
+`);
+    });
+
+    it("emits an error if a translated angular element has multiple child text elements and does not specify an id", async () => {
+      const { stats } = await compileAndGetTranslations(
+        "multiple-child-texts.html"
       );
 
-      var error = stats.compilation.errors[0];
-      assert.include(
-        error.message,
-        "expressions.html' uses an angular expression as translation id ('{{editCtrl.title}}') or as default text ('undefined'), this is not supported. To suppress this error at the 'suppress-dynamic-translation-error' attribute to the element or any of its parents."
-      );
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`
+Array [
+  ModuleError: "Failed to extract the angular-translate translations from 'multiple-child-texts.html':8:4: The element does not specify a translation id but has multiple child text elements. Specify the translation id on the element to define the translation id.",
+]
+`);
     });
 
     it("does suppress errors for dynamic translations if the element is attributed with suppress-dynamic-translation-error", async function() {
       const { translations, stats } = await compileAndGetTranslations(
         "expressions-suppressed.html"
       );
-      assert.lengthOf(
-        stats.compilation.errors,
-        0,
-        "The dynamic translation error is suppressed by the attribute suppress-dynamic-translation-error"
-      );
-      assert.deepEqual(translations, {});
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`Array []`);
+      expect(translations).toEqual({});
     });
 
     it("removes the suppress-dynamic-translation-error attribute for non dev build", async function() {
@@ -222,8 +228,8 @@ describe("HTML Loader", function() {
       );
       var output = stats.compilation.assets["main.js"].source();
 
-      assert.include(output, "{{editCtrl.title}}");
-      assert.notInclude(output, "suppress-dynamic-translation-error");
+      expect(output).toMatch("{{editCtrl.title}}");
+      expect(output).not.toMatch("suppress-dynamic-translation-error");
     });
   });
 
@@ -232,91 +238,85 @@ describe("HTML Loader", function() {
       const { translations } = await compileAndGetTranslations(
         "filter-simple.html"
       );
-      assert.propertyVal(translations, "Home", "Home");
+      expect(translations).toMatchObject({ Home: "Home" });
     });
 
     it("matches a filter in an attribute of an element", async function() {
       const { translations } = await compileAndGetTranslations(
         "filter-simple.html"
       );
-      assert.propertyVal(translations, "Waterfall", "Waterfall");
+      expect(translations).toMatchObject({ Waterfall: "Waterfall" });
     });
 
     it("matches an expression in the middle of the element text content", async function() {
       const { translations } = await compileAndGetTranslations(
         "filter-simple.html"
       );
-      assert.propertyVal(translations, "Top", "Top");
+      expect(translations).toMatchObject({ Top: "Top" });
     });
 
     it("matches multiple expressions in a single text", async function() {
       const { translations } = await compileAndGetTranslations(
         "multiple-filters.html"
       );
-      assert.propertyVal(translations, "Result", "Result");
-      assert.propertyVal(translations, "of", "of");
+      expect(translations).toMatchObject({
+        Result: "Result",
+        of: "of"
+      });
     });
 
     it("emits an error if a dynamic value is used in the translate filter", async function() {
       const { translations, stats } = await compileAndGetTranslations(
         "dynamic-filter-expression.html"
       );
-      assert.lengthOf(
-        stats.compilation.errors,
-        1,
-        "the loader should emit an error message for the dynamic translation"
-      );
 
-      assert.include(
-        stats.compilation.errors[0].message,
-        "dynamic-filter-expression.html:8:14: A dynamic filter expression is used in the text or an attribute of the element '<h1 id='top'>{{ editCtrl.title | translate }}</h1>'. Add the 'suppress-dynamic-translation-error' attribute to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation)."
-      );
-      assert.deepEqual({}, translations);
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`
+Array [
+  ModuleError: "Failed to extract the angular-translate translations from 'dynamic-filter-expression.html':8:14: A dynamic filter expression is used in the text or an attribute of the element '<h1 id='top'>{{ editCtrl.title | translate }}</h1>'. Add the 'suppress-dynamic-translation-error' attribute to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).",
+]
+`);
+      expect(translations).toEqual({});
     });
 
     it("emits an error if a filter is used before the translate filter", async function() {
       const { translations, stats } = await compileAndGetTranslations(
         "filter-chain.html"
       );
-      assert.lengthOf(
-        stats.compilation.errors,
-        1,
-        "the loader should emit an error message for filter chains where translate is not the first filter"
-      );
 
-      assert.include(
-        stats.compilation.errors[0].message,
-        "Another filter is used before the translate filter in the element <h1 id='top'>{{ \"5.0\" | currency | translate }}</h1>"
-      );
-      assert.deepEqual({}, translations);
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`
+Array [
+  ModuleError: "Failed to extract the angular-translate translations from 'filter-chain.html':8:14: Another filter is used before the translate filter in the element <h1 id='top'>{{ \\"5.0\\" | currency | translate }}</h1>. Add the 'suppress-dynamic-translation-error' to suppress the error (ensure that you have registered the translation manually, consider using i18n.registerTranslation).",
+]
+`);
+      expect(translations).toEqual({});
     });
 
     it("suppress dynamic translations errors if element or parent is attribute with suppress-dynamic-translation-error", async function() {
       const { stats } = await compileAndGetTranslations(
         "dynamic-filter-expression-suppressed.html"
       );
-      assert.lengthOf(stats.compilation.errors, 0);
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`Array []`);
     });
 
     it("suppress dynamic translations errors for custom elements when attributed with suppress-dynamic-translation-error", async function() {
       const { stats } = await compileAndGetTranslations(
         "dynamic-filter-custom-element.html"
       );
-      assert.deepEqual(stats.compilation.errors, []);
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`Array []`);
     });
 
     it("can parse an invalid html file", async function() {
       const { translations } = await compileAndGetTranslations(
         "invalid-html.html"
       );
-      assert.propertyVal(translations, "Result", "Result");
+      expect(translations).toMatchObject({ Result: "Result" });
     });
 
     it("can parse an html containing an attribute that starts with a $", async function() {
       const { translations } = await compileAndGetTranslations(
         "html-with-dollar-attribute.html"
       );
-      assert.propertyVal(translations, "Test", "Test");
+      expect(translations).toMatchObject({ Test: "Test" });
     });
   });
 
@@ -361,13 +361,12 @@ describe("JSLoader", function() {
       }
     });
 
-    assert.isNull(error);
-    assert.equal(stats.compilation.errors.length, 1);
-    assert.include(
-      stats.compilation.errors[0].message,
-      `Module build failed (from ./dist/js/js-loader.js):
-Error: The WebpackAngularTranslate plugin is missing. Add the plugin to your webpack configurations 'plugins' section.`
-    );
+    expect(error).toBeNull();
+    expect(stats.compilation.errors).toMatchInlineSnapshot(`
+Array [
+  ModuleBuildError: "The WebpackAngularTranslate plugin is missing. Add the plugin to your webpack configurations 'plugins' section.",
+]
+`);
   });
 
   it("passes the acorn parser options to acorn (in this case, allows modules)", async function() {
@@ -391,104 +390,98 @@ Error: The WebpackAngularTranslate plugin is missing. Add the plugin to your web
       },
       plugins: [new WebPackAngularTranslate.Plugin()]
     });
-    assert.isNull(error);
-    assert.deepEqual(stats.compilation.errors, []);
+    expect(error).toBeNull();
+    expect(stats.compilation.errors).toMatchInlineSnapshot(`Array []`);
   });
 
   describe("$translate", function() {
     it("extracts the translation id when the $translate service is used as global variable ($translate)", async function() {
       const { translations } = await compileAndGetTranslations("simple.js");
-      assert.propertyVal(translations, "global variable", "global variable");
+      expect(translations).toMatchObject({
+        "global variable": "global variable"
+      });
     });
 
     it("extracts the translation id when the $translate service is used in the constructor", async function() {
       const { translations } = await compileAndGetTranslations("simple.js");
-      assert.propertyVal(
-        translations,
-        "translate in constructor",
-        "translate in constructor"
-      );
+      expect(translations).toMatchObject({
+        "translate in constructor": "translate in constructor"
+      });
     });
 
     it("extracts the translation id when the $translate service is used in an arrow function (() => this.$translate)", async function() {
       const { translations } = await compileAndGetTranslations("simple.js");
-      assert.propertyVal(
-        translations,
-        "translate in arrow function",
-        "translate in arrow function"
-      );
+      expect(translations).toMatchObject({
+        "translate in arrow function": "translate in arrow function"
+      });
     });
 
     it("extracts the translation id when the $translate service is used in a member function (this.$translate)", async function() {
       const { translations } = await compileAndGetTranslations("simple.js");
-      assert.propertyVal(translations, "this-translate", "this-translate");
+      expect(translations).toMatchObject({
+        "this-translate": "this-translate"
+      });
     });
 
     it("extracts multiple translation id's when an array is passed as argument", async function() {
       const { translations } = await compileAndGetTranslations("array.js");
-      assert.propertyVal(translations, "FIRST_PAGE", "FIRST_PAGE");
-      assert.propertyVal(translations, "Next", "Next");
+      expect(translations).toMatchObject({
+        FIRST_PAGE: "FIRST_PAGE",
+        Next: "Next"
+      });
     });
 
     it("extracts instant translation id", async function() {
       const { translations } = await compileAndGetTranslations("instant.js");
-      assert.propertyVal(
-        translations,
-        "FIRST_TRANSLATION",
-        "FIRST_TRANSLATION"
-      );
-      assert.propertyVal(
-        translations,
-        "SECOND_TRANSLATION",
-        "SECOND_TRANSLATION"
-      );
-      assert.notProperty(translations, "SKIPPED_TRANSLATION");
+      expect(translations).toMatchObject({
+        FIRST_TRANSLATION: "FIRST_TRANSLATION",
+        SECOND_TRANSLATION: "SECOND_TRANSLATION"
+      });
+      expect(translations).not.toHaveProperty("SKIPPED_TRANSLATION");
     });
 
     it("extracts the default text", async function() {
       const { translations } = await compileAndGetTranslations(
         "defaultText.js"
       );
-      assert.propertyVal(translations, "Next", "Weiter");
+      expect(translations).toMatchObject({ Next: "Weiter" });
     });
 
     it("extracts the default text when an array is passed for the id's", async function() {
       const { translations } = await compileAndGetTranslations(
         "defaultText.js"
       );
-      assert.propertyVal(translations, "FIRST_PAGE", "Missing");
-      assert.propertyVal(translations, "LAST_PAGE", "Missing");
+      expect(translations).toMatchObject({
+        FIRST_PAGE: "Missing",
+        LAST_PAGE: "Missing"
+      });
     });
 
     it("emits errors if $translate is used with invalid arguments", async function() {
       const { translations, stats } = await compileAndGetTranslations(
         "invalid$translate.js"
       );
-      assert.lengthOf(stats.compilation.errors, 2);
 
-      assert.include(
-        stats.compilation.errors[0].message,
-        "A call to $translate requires at least one argument "
-      );
-      assert.include(
-        stats.compilation.errors[1].message,
-        "Illegal argument for call to $translate: The translation id should either be a string literal or an array containing string literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error."
-      );
-
-      assert.deepEqual(translations, {});
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`
+Array [
+  ModuleError: "Illegal argument for call to $translate: A call to $translate requires at least one argument that is the translation id. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (invalid$translate.js:1:0)",
+  ModuleError: "Illegal argument for call to $translate: The translation id should either be a string literal or an array containing string literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (invalid$translate.js:4:0)",
+]
+`);
+      expect(translations).toEqual({});
     });
 
     it("a comment suppress the dynamic translation errors for $translate", async function() {
       const { translations, stats } = await compileAndGetTranslations(
         "translateSuppressed.js"
       );
-      assert.lengthOf(stats.compilation.errors, 1);
 
-      assert.deepEqual(translations, {});
-      assert.include(
-        stats.compilation.errors[0].message,
-        "Illegal argument for call to $translate: The translation id should either be a string literal or an array containing string literals"
-      );
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`
+Array [
+  ModuleError: "Illegal argument for call to $translate: The translation id should either be a string literal or an array containing string literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (translateSuppressed.js:13:4)",
+]
+`);
+      expect(translations).toEqual({});
     });
   });
 
@@ -497,9 +490,9 @@ Error: The WebpackAngularTranslate plugin is missing. Add the plugin to your web
       const { translations, stats } = await compileAndGetTranslations(
         "registerTranslation.js"
       );
-      assert.lengthOf(stats.compilation.errors, 0);
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`Array []`);
 
-      assert.deepEqual(translations, {
+      expect(translations).toEqual({
         NEW_USER: "New user",
         EDIT_USER: "Edit user",
         "5": "true"
@@ -510,18 +503,14 @@ Error: The WebpackAngularTranslate plugin is missing. Add the plugin to your web
       const { translations, stats } = await compileAndGetTranslations(
         "registerInvalidTranslation.js"
       );
-      assert.lengthOf(stats.compilation.errors, 2);
 
-      assert.include(
-        stats.compilation.errors[0].message,
-        "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal"
-      );
-      assert.include(
-        stats.compilation.errors[1].message,
-        "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal"
-      );
-
-      assert.deepEqual(translations, {});
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`
+Array [
+  ModuleError: "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (registerInvalidTranslation.js:2:0)",
+  ModuleError: "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (registerInvalidTranslation.js:4:0)",
+]
+`);
+      expect(translations).toEqual({});
     });
   });
 
@@ -530,9 +519,9 @@ Error: The WebpackAngularTranslate plugin is missing. Add the plugin to your web
       const { translations, stats } = await compileAndGetTranslations(
         "registerTranslations.js"
       );
-      assert.deepEqual(stats.compilation.errors, []);
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`Array []`);
 
-      assert.deepEqual(translations, {
+      expect(translations).toEqual({
         Login: "Anmelden",
         Logout: "Abmelden",
         Next: "Weiter",
@@ -544,19 +533,14 @@ Error: The WebpackAngularTranslate plugin is missing. Add the plugin to your web
       const { translations, stats } = await compileAndGetTranslations(
         "registerInvalidTranslations.js"
       );
-      assert.lengthOf(stats.compilation.errors, 2);
 
-      assert.include(
-        stats.compilation.errors[0].message,
-        `Module Error (from ./dist/js/js-loader.js):
-Illegal argument for call to i18n.registerTranslations: The value for the key 'key' needs to be a literal`
-      );
-      assert.include(
-        stats.compilation.errors[1].message,
-        `Module Error (from ./dist/js/js-loader.js):
-Illegal argument for call to i18n.registerTranslations: requires a single argument that is an object where the key is the translationId and the value is the default text`
-      );
-      assert.deepEqual(translations, {});
+      expect(stats.compilation.errors).toMatchInlineSnapshot(`
+Array [
+  ModuleError: "Illegal argument for call to i18n.registerTranslations: The value for the key 'key' needs to be a literal (registerInvalidTranslations.js:5:0)",
+  ModuleError: "Illegal argument for call to i18n.registerTranslations: requires a single argument that is an object where the key is the translationId and the value is the default text (registerInvalidTranslations.js:1:0)",
+]
+`);
+      expect(translations).toEqual({});
     });
   });
 });
@@ -566,41 +550,54 @@ describe("Plugin", function() {
     const { translations, stats } = await compileAndGetTranslations(
       "differentDefaultTexts.js"
     );
-    assert.lengthOf(
-      stats.compilation.errors,
-      1,
-      "An error should be emitted if two id's have a different default text"
-    );
 
-    var error = stats.compilation.errors[0];
-    assert.match(
-      error.message,
-      /^Webpack-Angular-Translate: Two translations with the same id but different default text found\.\n\tExisting: \{ id: 'Next', defaultText: 'Weiter', usages: \[ .+differentDefaultTexts\.js:5:8 ] }\n\tnew: \{ id: 'Next', defaultText: 'Missing', usages: \[ .+differentDefaultTexts.js:6:8 ] }\n\tPlease define the same default text twice or specify the default text only once\.$/
-    );
-
-    assert.deepEqual(translations, {});
+    expect(stats.compilation.errors).toMatchInlineSnapshot(`
+Array [
+  [Error: Webpack-Angular-Translate: Two translations with the same id but different default text found.
+	Existing: {
+  "id": "Next",
+  "defaultText": "Weiter",
+  "usages": [
+    "differentDefaultTexts.js:5:8"
+  ]
+}
+	New: {
+  "id": "Next",
+  "defaultText": "Missing",
+  "usages": [
+    "differentDefaultTexts.js:6:8"
+  ]
+}
+	Please define the same default text twice or specify the default text only once.],
+]
+`);
+    expect(translations).toEqual({});
   });
 
   it("emits a warning if the translation id is missing", async function() {
     const { translations, stats } = await compileAndGetTranslations(
       "emptyTranslate.html"
     );
-    assert.lengthOf(
-      stats.compilation.warnings,
-      1,
-      "A warning should have been emitted if a translation is used with an empty translation id"
-    );
+    expect(stats.compilation.warnings).toHaveLength(1);
 
-    var warning = stats.compilation.warnings[0];
-    assert.match(
-      warning.message,
-      /^Invalid angular-translate translation '\{ id: '', defaultText: 'undefined', usages: \[ .+\/test\/cases\/emptyTranslate.html:5:8 ] }' found\. The id of the translation is empty, consider removing the translate attribute \(html\) or defining the translation id \(js\)\.$/
-    );
+    expect(stats.compilation.warnings).toMatchInlineSnapshot(`
+Array [
+  [Error: Invalid angular-translate translation found: The id of the translation is empty. Consider removing the translate attribute (html) or defining the translation id (js).
+Translation:
+'{
+  "id": "",
+  "defaultText": null,
+  "usages": [
+    "emptyTranslate.html:5:8"
+  ]
+}'],
+]
+`);
 
-    assert.deepEqual(translations, {});
+    expect(translations).toEqual({});
   });
 
-  it("does not add translations twice if file is recompiled after change", function(done) {
+  it("does not add translations twice if file is recompiled after change", async function() {
     const projectVolume = Volume.fromJSON(
       {
         "./fileChange.js":
@@ -624,64 +621,40 @@ describe("Plugin", function() {
     compiler.inputFileSystem = inputFs;
     compiler.outputFileSystem = new VolumeOutputFileSystem(outputVolume);
 
-    var firstRun = true;
-    var watching = compiler.watch({}, function(error, stats) {
-      "use strict";
+    var secondCompilationStats = await new Promise((resolve, reject) => {
+      var firstRun = true;
+      var watching = compiler.watch({}, function(error, stats) {
+        if (error) {
+          return reject(error);
+        }
 
-      assert.notOk(error, "Failed to compile the assets");
+        if (firstRun) {
+          if (stats.compilation.errors.length > 0) {
+            return reject(stats.compilation.errors);
+          }
 
-      if (firstRun) {
-        assert.deepEqual(
-          stats.compilation.errors,
-          [],
-          "First compilation failed with errors"
-        );
+          firstRun = false;
+          projectVolume.writeFileSync(
+            "./fileChange.js",
+            "i18n.registerTranslation('NEW_USER', 'Neuer Benutzer');"
+          );
 
-        firstRun = false;
-        projectVolume.writeFileSync(
-          "./fileChange.js",
-          "i18n.registerTranslation('NEW_USER', 'Neuer Benutzer');"
-        );
-        watching.invalidate(); // watch doesn't seem to work with memory fs
-      } else {
-        assert.deepEqual(
-          stats.compilation.errors,
-          [],
-          "The implementation should not emit duplicate translation errors after recompilation with different text."
-        );
+          watching.invalidate(); // watch doesn't seem to work with memory fs
+        } else {
+          watching.close(() => resolve(stats));
+        }
+      });
+    });
 
-        var translations = JSON.parse(
-          outputVolume.toJSON(__dirname, undefined, true)[
-            "dist/translations.json"
-          ]
-        );
+    expect(secondCompilationStats.compilation.errors).toHaveLength(0);
 
-        assert.propertyVal(
-          translations,
-          "NEW_USER",
-          "Neuer Benutzer",
-          "Uses the updated translation"
-        );
-        assert.propertyVal(
-          translations,
-          "DELETE_USER",
-          "Delete User",
-          "Does not delete translations used by other resources"
-        );
-        assert.notProperty(
-          translations,
-          "WillBeDeleted",
-          "The property is not used by fileChange.js anymore, so we should remove it from the translations.json"
-        );
+    var translations = JSON.parse(
+      outputVolume.toJSON(__dirname, undefined, true)["dist/translations.json"]
+    );
 
-        // Immediately closing the watching results in a haning webpack instance
-        // delay the closing till the next tick
-        Promise.resolve().then(() => {
-          watching.close(() => {
-            done();
-          });
-        });
-      }
+    expect(translations).toEqual({
+      NEW_USER: "Neuer Benutzer",
+      DELETE_USER: "Delete User"
     });
   });
 });

@@ -1,43 +1,42 @@
-var sinon = require("sinon");
-var assert = require("chai").assert;
-var types = require("ast-types");
-var b = types.builders;
-var n = types.namedTypes;
-var TranslateVisitor = require("../../dist/js/translate-visitor").default;
-var isCommentedWithSuppressError = require("../../dist/js/translate-visitor")
-  .isCommentedWithSuppressError;
+import "../translate-jest-matchers";
+import types from "ast-types";
+import createTranslateVisitor, {
+  isCommentedWithSuppressError
+} from "../../src/js/translate-visitor";
+
+const { builders: b, namedTypes: n } = types;
 
 describe("TranslateVisitor", function() {
-  var loaderContext;
-  var visitor;
+  let loaderContext;
+  let visitor;
 
-  beforeEach(function() {
+  beforeEach(() => {
     loaderContext = {
-      registerTranslation: sinon.spy(),
-      pruneTranslations: sinon.spy(),
-      emitError: sinon.spy()
+      registerTranslation: jest.fn().mockName("registerTranslation"),
+      pruneTranslations: jest.fn(),
+      emitError: jest.fn(),
+      context: "path",
+      resourcePath: "path/test.js",
+      resource: "test.js"
     };
 
-    visitor = new TranslateVisitor(loaderContext);
+    visitor = createTranslateVisitor(loaderContext);
   });
 
-  describe("$translate", function() {
-    "use strict";
+  describe("$translate", () => {
+    let $translate;
 
-    var $translate;
-
-    beforeEach(function() {
+    beforeEach(() => {
       $translate = b.identifier("$translate");
     });
 
-    it("extracts the translation with it's id from a $translate call with a single argument", function() {
-      var translateCall = b.callExpression($translate, [b.literal("test")]);
+    it("extracts the translation with it's id from a $translate call with a single argument", () => {
+      let translateCall = b.callExpression($translate, [b.literal("test")]);
       translateCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: undefined,
         usages: [
@@ -49,19 +48,18 @@ describe("TranslateVisitor", function() {
       });
     });
 
-    it("extracts the translation with it's id and default text from a $translate call with a four argument", function() {
-      var translateCall = b.callExpression($translate, [
+    it("extracts the translation with it's id and default text from a $translate call with a four argument", () => {
+      let translateCall = b.callExpression($translate, [
         b.literal("test"),
         b.identifier("undefined"),
         b.identifier("undefined"),
         b.literal("Test")
       ]);
       translateCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: "Test",
         usages: [
@@ -74,15 +72,14 @@ describe("TranslateVisitor", function() {
     });
 
     it("extracts all translation with their ids for a $translate call with an array of translation ids", function() {
-      var translateCall = b.callExpression($translate, [
+      let translateCall = b.callExpression($translate, [
         b.arrayExpression([b.literal("test"), b.literal("test2")])
       ]);
       translateCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: undefined,
         usages: [
@@ -93,7 +90,7 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test2",
         defaultText: undefined,
         usages: [
@@ -106,17 +103,16 @@ describe("TranslateVisitor", function() {
     });
 
     it("extracts the translation when $translate is a member of this", function() {
-      var translateCall = b.callExpression(
+      let translateCall = b.callExpression(
         b.memberExpression(b.thisExpression(), $translate),
         [b.literal("test")]
       );
 
       translateCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: undefined,
         usages: [
@@ -129,17 +125,16 @@ describe("TranslateVisitor", function() {
     });
 
     it("extracts the translation when $translate is a member", function() {
-      var translateCall = b.callExpression(
+      let translateCall = b.callExpression(
         b.memberExpression(b.identifier("_this"), $translate),
         [b.literal("test")]
       );
 
       translateCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: undefined,
         usages: [
@@ -152,97 +147,60 @@ describe("TranslateVisitor", function() {
     });
 
     it("emits an error if the function is called without any arguments", function() {
-      var translateCall = b.callExpression($translate, []);
+      let translateCall = b.callExpression($translate, []);
       translateCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
-            "Illegal argument for call to $translate: A call to $translate requires at least one argument that is the translation id. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if the translation id is not an array expression and neither a literal", function() {
-      var translateCall = b.callExpression($translate, [b.identifier("test")]);
+      let translateCall = b.callExpression($translate, [b.identifier("test")]);
       translateCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
-            "Illegal argument for call to $translate: The translation id should either be a string literal or an array containing string literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if any translation id in the passed in array is not a literal", function() {
-      var translateCall = b.callExpression($translate, [
+      let translateCall = b.callExpression($translate, [
         b.arrayExpression([b.literal("test"), b.identifier("notValid")])
       ]);
       translateCall.loc = { start: { line: 1, column: 0 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
-            "Illegal argument for call to $translate: The array with the translation ids should only contain literals. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:0)."
-          )
-          .and(sinon.match.instanceOf(Error))
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if the default text is not a literal", function() {
-      var translateCall = b.callExpression($translate, [
+      let translateCall = b.callExpression($translate, [
         b.literal("test"),
         b.literal(null),
         b.literal(null),
         b.identifier("test")
       ]);
       translateCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(translateCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
-            "Illegal argument for call to $translate: The default text should be a string literal. If you have registered the translation manually, you can use a /* suppress-dynamic-translation-error: true */ comment in the block of the function call to suppress this error. (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("suppress the call needs at least one argument error if block contains 'suppress-dynamic-translation-error: true' comment", function() {
-      var lineComment = b.line("suppress-dynamic-translation-error: true");
+      let lineComment = b.line("suppress-dynamic-translation-error: true");
       lineComment.loc = {
         start: { line: 1, column: 1 },
         end: { line: 1, column: 38 }
       };
       visitor.comments.push(lineComment);
 
-      var translateCall = b.callExpression($translate, []);
+      let translateCall = b.callExpression($translate, []);
       translateCall.loc = { start: { line: 2, column: 1 } };
-      loaderContext.resource = "test.js";
 
-      var root = b.program([b.expressionStatement(translateCall)]);
+      let root = b.program([b.expressionStatement(translateCall)]);
       root.loc = {
         start: { line: 1, column: 1 },
         end: { line: 2, column: 12 }
@@ -250,26 +208,22 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(root);
 
-      assert.notOk(loaderContext.emitError.called, "No error has been emitted");
-      assert.notOk(
-        loaderContext.registerTranslation.called,
-        "No translation has been registered"
-      );
+      expect(loaderContext.emitError).not.toHaveBeenCalled();
+      expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
     });
 
     it("suppress the id needs to be a literal error if block contains 'suppress-dynamic-translation-error: true' comment", function() {
-      var lineComment = b.line("suppress-dynamic-translation-error: true");
+      let lineComment = b.line("suppress-dynamic-translation-error: true");
       lineComment.loc = {
         start: { line: 1, column: 1 },
         end: { line: 1, column: 38 }
       };
       visitor.comments.push(lineComment);
 
-      var translateCall = b.callExpression($translate, [b.identifier("test")]);
+      let translateCall = b.callExpression($translate, [b.identifier("test")]);
       translateCall.loc = { start: { line: 2, column: 1 } };
-      loaderContext.resource = "test.js";
 
-      var root = b.program([b.expressionStatement(translateCall)]);
+      let root = b.program([b.expressionStatement(translateCall)]);
       root.loc = {
         start: { line: 1, column: 1 },
         end: { line: 2, column: 12 }
@@ -277,31 +231,27 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(root);
 
-      assert.notOk(loaderContext.emitError.called, "No error has been emitted");
-      assert.notOk(
-        loaderContext.registerTranslation.called,
-        "No translation has been registered"
-      );
+      expect(loaderContext.emitError).not.toHaveBeenCalled();
+      expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
     });
 
     it("suppress the default value needs to be a literal error if block contains 'suppress-dynamic-translation-error: true' comment", function() {
-      var lineComment = b.line("suppress-dynamic-translation-error: true");
+      let lineComment = b.line("suppress-dynamic-translation-error: true");
       lineComment.loc = {
         start: { line: 1, column: 1 },
         end: { line: 1, column: 38 }
       };
       visitor.comments.push(lineComment);
 
-      var translateCall = b.callExpression($translate, [
+      let translateCall = b.callExpression($translate, [
         b.literal("test"),
         b.literal(null),
         b.literal(null),
         b.identifier("defaultText")
       ]);
       translateCall.loc = { start: { line: 2, column: 1 } };
-      loaderContext.resource = "test.js";
 
-      var root = b.program([b.expressionStatement(translateCall)]);
+      let root = b.program([b.expressionStatement(translateCall)]);
       root.loc = {
         start: { line: 1, column: 1 },
         end: { line: 2, column: 12 }
@@ -309,19 +259,16 @@ describe("TranslateVisitor", function() {
 
       visitor.visit(root);
 
-      assert.notOk(loaderContext.emitError.called, "No error has been emitted");
-      assert.notOk(
-        loaderContext.registerTranslation.called,
-        "No translation has been registered"
-      );
+      expect(loaderContext.emitError).not.toHaveBeenCalled();
+      expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
     });
   });
 
   describe("i18n.registerTranslation", function() {
     "use strict";
 
-    var i18n;
-    var registerTranslation;
+    let i18n;
+    let registerTranslation;
 
     beforeEach(function() {
       i18n = b.identifier("i18n");
@@ -332,15 +279,14 @@ describe("TranslateVisitor", function() {
     });
 
     it("extracts the translation with it's id from a i18n.registerTranslation call with a single argument", function() {
-      var registerTranslationCall = b.callExpression(registerTranslation, [
+      let registerTranslationCall = b.callExpression(registerTranslation, [
         b.literal("test")
       ]);
       registerTranslationCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
-      var ast = visitor.visit(registerTranslationCall);
+      let ast = visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: undefined,
         usages: [
@@ -351,26 +297,21 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      assert.ok(visitor.changedAst, "has removed the registerTranslation call");
-      assert.ok(n.Literal.check(ast));
-      assert.equal(
-        ast.value,
-        "test",
-        "has removed the registerTranslation call with the translation id"
-      );
+      expect(visitor.changedAst).toBe(true);
+      expect(n.Literal.check(ast)).toBe(true);
+      expect(ast.value).toBe("test");
     });
 
     it("extracts the translation with it's id and default text from a i18n.registerTranslation call with a two arguments", function() {
-      var registerTranslationCall = b.callExpression(registerTranslation, [
+      let registerTranslationCall = b.callExpression(registerTranslation, [
         b.literal("test"),
         b.literal("default Text")
       ]);
       registerTranslationCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
-      var ast = visitor.visit(registerTranslationCall);
+      let ast = visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: "default Text",
         usages: [
@@ -381,81 +322,49 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      assert.ok(visitor.changedAst, "has removed the registerTranslation call");
-      assert.ok(n.Literal.check(ast));
-      assert.equal(
-        ast.value,
-        "test",
-        "has removed the registerTranslation call with the translation id"
-      );
+      expect(visitor.changedAst).toBe(true);
+      expect(n.Literal.check(ast)).toBe(true);
+      expect(ast.value).toBe("test");
     });
 
     it("emits an error if called without arguments", function() {
-      var registerTranslationCall = b.callExpression(registerTranslation, []);
+      let registerTranslationCall = b.callExpression(registerTranslation, []);
       registerTranslationCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
-            "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if the translation is not a literal", function() {
-      var registerTranslationCall = b.callExpression(registerTranslation, [
+      let registerTranslationCall = b.callExpression(registerTranslation, [
         b.identifier("test")
       ]);
       registerTranslationCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
-
-            "Illegal argument for call to 'i18n.registerTranslation'. The call requires at least the 'translationId' argument that needs to be a literal (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
 
     it("emits an error if the default text is not a literal", function() {
-      var registerTranslationCall = b.callExpression(registerTranslation, [
+      let registerTranslationCall = b.callExpression(registerTranslation, [
         b.literal("test"),
         b.identifier("defaultText")
       ]);
       registerTranslationCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
       visitor.visit(registerTranslationCall);
 
-      sinon.assert.calledWith(
-        loaderContext.emitError,
-        sinon.match
-          .has(
-            "message",
-            "Illegal argument for call to i18n.registerTranslation: the default text has to be a literal (test.js:1:1)."
-          )
-          .and(sinon.match.instanceOf(Error))
-      );
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
     });
   });
 
   describe("i18n.registerTranslations", function() {
     "use strict";
 
-    var i18n;
-    var registerTranslations;
+    let i18n;
+    let registerTranslations;
 
     beforeEach(function() {
       i18n = b.identifier("i18n");
@@ -466,31 +375,29 @@ describe("TranslateVisitor", function() {
     });
 
     it("can process empty registerTranslations calls", function() {
-      var registerTranslationCall = b.callExpression(registerTranslations, [
+      let registerTranslationCall = b.callExpression(registerTranslations, [
         b.objectExpression([])
       ]);
-      loaderContext.resource = "test.js";
 
-      var ast = visitor.visit(registerTranslationCall);
+      let ast = visitor.visit(registerTranslationCall);
 
-      assert.equal(loaderContext.registerTranslation.callCount, 0);
-      assert.ok(visitor.changedAst);
-      assert.ok(n.ArrayExpression.check(ast));
+      expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
+      expect(visitor.changedAst).toBe(true);
+      expect(n.ArrayExpression.check(ast)).toBe(true);
     });
 
     it("extracts the translation with it's id and default text from a i18n.registerTranslations call", function() {
-      var registerTranslationsCall = b.callExpression(registerTranslations, [
+      let registerTranslationsCall = b.callExpression(registerTranslations, [
         b.objectExpression([
           b.property("init", b.identifier("test"), b.literal("Test")),
           b.property("init", b.identifier("x"), b.literal("X"))
         ])
       ]);
       registerTranslationsCall.loc = { start: { line: 1, column: 1 } };
-      loaderContext.resource = "test.js";
 
-      var ast = visitor.visit(registerTranslationsCall);
+      let ast = visitor.visit(registerTranslationsCall);
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "test",
         defaultText: "Test",
         usages: [
@@ -501,7 +408,7 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      sinon.assert.calledWithMatch(loaderContext.registerTranslation, {
+      expect(loaderContext.registerTranslation).toHaveBeenCalledWith({
         id: "x",
         defaultText: "X",
         usages: [
@@ -512,13 +419,13 @@ describe("TranslateVisitor", function() {
         ]
       });
 
-      assert.ok(visitor.changedAst);
-      assert.ok(n.ArrayExpression.check(ast));
-      assert.equal(ast.elements.length, 2);
-      assert.ok(n.Literal.check(ast.elements[0]));
-      assert.ok(n.Literal.check(ast.elements[1]));
-      assert.equal(ast.elements[0].value, "test");
-      assert.equal(ast.elements[1].value, "x");
+      expect(visitor.changedAst).toBe(true);
+      expect(n.ArrayExpression.check(ast)).toBe(true);
+      expect(ast.elements).toHaveLength(2);
+      expect(n.Literal.check(ast.elements[0])).toBe(true);
+      expect(n.Literal.check(ast.elements[1])).toBe(true);
+      expect(ast.elements[0].value).toBe("test");
+      expect(ast.elements[1].value).toBe("x");
     });
 
     // TODO bad cases
@@ -526,7 +433,7 @@ describe("TranslateVisitor", function() {
 
   describe("isCommentedWithSuppressError", function() {
     "use strict";
-    var comments;
+    let comments;
 
     beforeEach(function() {
       comments = [];
@@ -536,7 +443,7 @@ describe("TranslateVisitor", function() {
      * $translate();
      */
     it("returns false for a program without a comment", function() {
-      var program = b.program([
+      let program = b.program([
         b.expressionStatement(b.callExpression(b.identifier("$translate"), []))
       ]);
 
@@ -544,9 +451,9 @@ describe("TranslateVisitor", function() {
         start: { line: 1, column: 1 },
         end: { line: 1, column: 12 }
       };
-      var root = new types.NodePath({ root: program }).get("root");
+      let root = new types.NodePath({ root: program }).get("root");
 
-      assert.notOk(isCommentedWithSuppressError(root, comments));
+      expect(isCommentedWithSuppressError(root, comments)).toBe(false);
     });
 
     /**
@@ -554,14 +461,14 @@ describe("TranslateVisitor", function() {
      * $translate();
      */
     it("returns true for a program with a comment", function() {
-      var lineComment = b.line("suppress-dynamic-translation-error: true");
+      let lineComment = b.line("suppress-dynamic-translation-error: true");
       lineComment.loc = {
         start: { line: 1, column: 1 },
         end: { line: 1, column: 38 }
       };
       comments.push(lineComment);
 
-      var program = b.program([
+      let program = b.program([
         b.expressionStatement(b.callExpression(b.identifier("$translate"), []))
       ]);
       program.loc = {
@@ -569,9 +476,9 @@ describe("TranslateVisitor", function() {
         end: { line: 2, column: 12 }
       };
 
-      var root = new types.NodePath({ root: program }).get("root");
+      let root = new types.NodePath({ root: program }).get("root");
 
-      assert.ok(isCommentedWithSuppressError(root, comments));
+      expect(isCommentedWithSuppressError(root, comments)).toBe(true);
     });
 
     /**
@@ -579,14 +486,14 @@ describe("TranslateVisitor", function() {
      * $translate();
      */
     it("returns true if the containing program contains a comment", function() {
-      var lineComment = b.line("suppress-dynamic-translation-error: true");
+      let lineComment = b.line("suppress-dynamic-translation-error: true");
       lineComment.loc = {
         start: { line: 1, column: 1 },
         end: { line: 1, column: 38 }
       };
       comments.push(lineComment);
 
-      var expression = b.expressionStatement(
+      let expression = b.expressionStatement(
         b.callExpression(b.identifier("$translate"), [])
       );
       expression.loc = {
@@ -594,16 +501,16 @@ describe("TranslateVisitor", function() {
         end: { line: 2, column: 12 }
       };
 
-      var program = b.program([expression]);
+      let program = b.program([expression]);
       program.loc = {
         start: { line: 1, column: 1 },
         end: { line: 2, column: 12 }
       };
 
-      var root = new types.NodePath({ root: program }).get("root");
-      assert.ok(
+      let root = new types.NodePath({ root: program }).get("root");
+      expect(
         isCommentedWithSuppressError(root.get("body").get(0), comments)
-      );
+      ).toBe(true);
     });
 
     /**
@@ -613,14 +520,14 @@ describe("TranslateVisitor", function() {
      *  }
      */
     it("returns true if a parent block contains a comment", function() {
-      var lineComment = b.line("suppress-dynamic-translation-error: true");
+      let lineComment = b.line("suppress-dynamic-translation-error: true");
       lineComment.loc = {
         start: { line: 2, column: 1 },
         end: { line: 2, column: 38 }
       };
       comments.push(lineComment);
 
-      var expression = b.expressionStatement(
+      let expression = b.expressionStatement(
         b.callExpression(b.identifier("$translate"), [])
       );
       expression.loc = {
@@ -628,21 +535,21 @@ describe("TranslateVisitor", function() {
         end: { line: 3, column: 12 }
       };
 
-      var block = b.blockStatement([expression]);
+      let block = b.blockStatement([expression]);
       block.loc = {
         start: { line: 1, column: 1 },
         end: { line: 4, column: 1 }
       };
 
-      var program = b.program([block]);
+      let program = b.program([block]);
       program.loc = {
         start: { line: 1, column: 1 },
         end: { line: 4, column: 1 }
       };
 
-      var root = new types.NodePath({ root: program }).get("root");
+      let root = new types.NodePath({ root: program }).get("root");
 
-      assert.ok(
+      expect(
         isCommentedWithSuppressError(
           root
             .get("body")
@@ -651,7 +558,7 @@ describe("TranslateVisitor", function() {
             .get(0),
           comments
         )
-      );
+      ).toBe(true);
     });
 
     /**
@@ -661,7 +568,7 @@ describe("TranslateVisitor", function() {
      * }
      */
     it("returns false if a sibling block contains a comment", function() {
-      var expression = b.expressionStatement(
+      let expression = b.expressionStatement(
         b.callExpression(b.identifier("$translate"), [])
       );
       expression.loc = {
@@ -669,30 +576,30 @@ describe("TranslateVisitor", function() {
         end: { line: 1, column: 12 }
       };
 
-      var block = b.blockStatement([expression]);
+      let block = b.blockStatement([expression]);
       block.loc = {
         start: { line: 2, column: 1 },
         end: { line: 4, column: 1 }
       };
 
-      var lineComment = b.line("suppress-dynamic-translation-error: true");
+      let lineComment = b.line("suppress-dynamic-translation-error: true");
       lineComment.loc = {
         start: { line: 3, column: 1 },
         end: { line: 3, column: 38 }
       };
       comments.push(lineComment);
 
-      var program = b.program([expression, block]);
+      let program = b.program([expression, block]);
       program.loc = {
         start: { line: 1, column: 1 },
         end: { line: 4, column: 1 }
       };
 
-      var root = new types.NodePath({ root: program }).get("root");
+      let root = new types.NodePath({ root: program }).get("root");
 
-      assert.notOk(
+      expect(
         isCommentedWithSuppressError(root.get("body").get(0), comments)
-      );
+      ).toBe(false);
     });
   });
 });

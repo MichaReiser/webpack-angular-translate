@@ -1,6 +1,5 @@
-var assert = require("chai").assert;
-var Translation = require("../dist/translation").default;
-var TranslationsRegistry = require("../dist/translations-registry").default;
+import Translation from "../src/translation";
+import TranslationsRegistry from "../dist/translations-registry";
 
 describe("TranslationsRegistry", function() {
   "use strict";
@@ -13,32 +12,32 @@ describe("TranslationsRegistry", function() {
 
   describe("empty", function() {
     it("is true by default", function() {
-      assert.ok(registry.empty);
+      expect(registry.empty).toBe(true);
     });
 
     it("is false if a translation is registered", function() {
       registry.registerTranslation(createTranslation("test"));
 
-      assert.notOk(registry.empty);
+      expect(registry.empty).toBe(false);
     });
   });
 
   describe("toJSON", function() {
     it("returns an empty object by default", function() {
-      assert.deepEqual(registry.toJSON(), {});
+      expect(registry.toJSON()).toEqual({});
     });
 
     it("returns the registered translation", function() {
       registry.registerTranslation(createTranslation("test", "Test"));
 
-      assert.deepEqual(registry.toJSON(), { test: "Test" });
+      expect(registry.toJSON()).toEqual({ test: "Test" });
     });
 
     it("returns all registered translations", function() {
       registry.registerTranslation(createTranslation("test", "Test"));
       registry.registerTranslation(createTranslation("other"));
 
-      assert.deepEqual(registry.toJSON(), { test: "Test", other: "other" });
+      expect(registry.toJSON()).toEqual({ test: "Test", other: "other" });
     });
   });
 
@@ -48,58 +47,101 @@ describe("TranslationsRegistry", function() {
       registry.registerTranslation(createTranslation("test", "Test", 10, 1));
 
       var translation = registry.getTranslation("test");
-      assert(translation, "The translation is registered");
+      expect(translation).toBeTruthy();
 
-      assert.sameDeepMembers(translation.usages, [
-        {
-          resource: RESOURCE,
-          loc: {
-            line: 1,
-            column: 1
-          }
-        },
+      expect(translation.usages).toEqual([
         {
           resource: RESOURCE,
           loc: {
             line: 10,
             column: 1
           }
+        },
+        {
+          resource: RESOURCE,
+          loc: {
+            line: 1,
+            column: 1
+          }
         }
       ]);
 
-      assert.deepEqual(
-        registry.toJSON(),
-        { test: "Test" },
-        "should output merged translations only once"
-      );
+      expect(registry.toJSON()).toEqual({ test: "Test" });
     });
 
     it("throws if another translation with a different default text exists", function() {
       registry.registerTranslation(createTranslation("test", "Test"));
 
-      assert.throws(function() {
+      expect(function() {
         registry.registerTranslation(
           createTranslation("test", "Other default text", 10)
         );
-      }, "Webpack-Angular-Translate: Two translations with the same id but different default text found.\n\tExisting: { id: 'test', defaultText: 'Test', usages: [ test.js:1:1 ] }\n\tnew: { id: 'test', defaultText: 'Other default text', usages: [ test.js:10:1 ] }\n\tPlease define the same default text twice or specify the default text only once.");
+      }).toThrowErrorMatchingInlineSnapshot(`
+"Webpack-Angular-Translate: Two translations with the same id but different default text found.
+	Existing: {
+  \\"id\\": \\"test\\",
+  \\"defaultText\\": \\"Test\\",
+  \\"usages\\": [
+    \\"test.js:1:1\\"
+  ]
+}
+	New: {
+  \\"id\\": \\"test\\",
+  \\"defaultText\\": \\"Other default text\\",
+  \\"usages\\": [
+    \\"test.js:10:1\\"
+  ]
+}
+	Please define the same default text twice or specify the default text only once."
+`);
     });
 
     it("throws if the translation id is an empty string", function() {
-      assert.throws(function() {
+      expect(function() {
         registry.registerTranslation(createTranslation(""));
-      }, "Invalid angular-translate translation '{ id: '', defaultText: 'undefined', usages: [ test.js:1:1 ] }' found. The id of the translation is empty, consider removing the translate attribute (html) or defining the translation id (js).");
+      }).toThrowErrorMatchingInlineSnapshot(`
+"Invalid angular-translate translation found: The id of the translation is empty. Consider removing the translate attribute (html) or defining the translation id (js).
+Translation:
+'{
+  \\"id\\": \\"\\",
+  \\"defaultText\\": null,
+  \\"usages\\": [
+    \\"test.js:1:1\\"
+  ]
+}'"
+`);
     });
 
     it("throws if the translation id is undefined", function() {
-      assert.throws(function() {
+      expect(function() {
         registry.registerTranslation(createTranslation());
-      }, "Invalid angular-translate translation '{ id: 'undefined', defaultText: 'undefined', usages: [ test.js:1:1 ] }' found. The id of the translation is empty, consider removing the translate attribute (html) or defining the translation id (js).");
+      }).toThrowErrorMatchingInlineSnapshot(`
+"Invalid angular-translate translation found: The id of the translation is empty. Consider removing the translate attribute (html) or defining the translation id (js).
+Translation:
+'{
+  \\"id\\": null,
+  \\"defaultText\\": null,
+  \\"usages\\": [
+    \\"test.js:1:1\\"
+  ]
+}'"
+`);
     });
 
     it("throws if the translation id is null", function() {
-      assert.throws(function() {
+      expect(function() {
         registry.registerTranslation(createTranslation(null));
-      }, "Invalid angular-translate translation '{ id: 'null', defaultText: 'undefined', usages: [ test.js:1:1 ] }' found. The id of the translation is empty, consider removing the translate attribute (html) or defining the translation id (js).");
+      }).toThrowErrorMatchingInlineSnapshot(`
+"Invalid angular-translate translation found: The id of the translation is empty. Consider removing the translate attribute (html) or defining the translation id (js).
+Translation:
+'{
+  \\"id\\": null,
+  \\"defaultText\\": null,
+  \\"usages\\": [
+    \\"test.js:1:1\\"
+  ]
+}'"
+`);
     });
   });
 
@@ -110,8 +152,8 @@ describe("TranslationsRegistry", function() {
 
       registry.pruneTranslations(RESOURCE);
 
-      assert(registry.empty, "all translations are removed");
-      assert.deepEqual(registry.toJSON(), {});
+      expect(registry.empty).toBe(true);
+      expect(registry.toJSON()).toEqual({});
     });
 
     it("does not remove translations from other resources", function() {
@@ -125,11 +167,8 @@ describe("TranslationsRegistry", function() {
 
       registry.pruneTranslations(RESOURCE);
 
-      assert.notOk(
-        registry.empty,
-        "The translations from other.js are not removed"
-      );
-      assert.deepEqual(registry.toJSON(), { other: "Other" });
+      expect(registry.empty).toBe(false);
+      expect(registry.toJSON()).toEqual({ other: "Other" });
     });
 
     it("does not remove translation if it is used by another resource", function() {
@@ -143,11 +182,8 @@ describe("TranslationsRegistry", function() {
 
       registry.pruneTranslations(RESOURCE);
 
-      assert.notOk(
-        registry.empty,
-        "The translations from other.js are not removed"
-      );
-      assert.deepEqual(registry.toJSON(), { test: "Test" });
+      expect(registry.empty).toBe(false);
+      expect(registry.toJSON()).toEqual({ test: "Test" });
     });
 
     it("removes a translation if all usages have been pruned", function() {
@@ -162,8 +198,8 @@ describe("TranslationsRegistry", function() {
       registry.pruneTranslations(RESOURCE);
       registry.pruneTranslations("other.js");
 
-      assert(registry.empty, "all translations are removed");
-      assert.deepEqual(registry.toJSON(), {});
+      expect(registry.empty).toBe(true);
+      expect(registry.toJSON()).toEqual({});
     });
   });
 

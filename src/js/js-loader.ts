@@ -1,9 +1,9 @@
+import * as path from "path";
 import * as escodegen from "escodegen";
 import * as acorn from "acorn";
-import * as ESTree from "estree";
 import { CodeWithSourceMap, SourceMapConsumer } from "source-map";
 import TranslateLoaderContext from "../translate-loader-context";
-import TranslateVisitor from "./translate-visitor";
+import createTranslateVisitor from "./translate-visitor";
 import * as loaderUtils from "loader-utils";
 
 /**
@@ -61,14 +61,14 @@ async function extractTranslations(
   source: string,
   sourceMaps: any
 ) {
-  const options = loaderUtils.getOptions(loader) || {};
+  const options: LoaderOptions = loaderUtils.getOptions(loader) || {};
   const parserOptions = options.parserOptions || {};
 
-  loader.pruneTranslations(loader.resource);
+  loader.pruneTranslations(path.relative(loader.context, loader.resourcePath));
 
-  const visitor = new TranslateVisitor(loader, parserOptions);
+  const visitor = createTranslateVisitor(loader, parserOptions);
   const sourceAst = acorn.parse(source, visitor.options);
-  const transformedAst = visitor.visit(sourceAst as ESTree.Node);
+  const transformedAst = visitor.visit(sourceAst);
 
   let code = source;
 

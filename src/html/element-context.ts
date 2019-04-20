@@ -1,3 +1,4 @@
+import * as path from "path";
 import { AngularExpressionMatch } from "./ng-filters";
 import TranslateLoaderContext from "../translate-loader-context";
 
@@ -21,27 +22,8 @@ export abstract class HtmlParseContext {
    */
   readonly texts: Text[] = [];
 
-  public suppressDynamicTranslationErrors: boolean;
-
-  /**
-   * Is the translate directive applied to the current element (translate element or element with translate attribute)
-   */
-  translateDirective = false;
-
-  /**
-   * Does the element has translate-attr-* attributes?
-   */
-  translateAttributes = true;
-
-  /**
-   * The translation id
-   */
-  translationId: string;
-
-  /**
-   * The default text of the translation
-   */
-  defaultText: string;
+  public abstract get suppressDynamicTranslationErrors(): boolean;
+  public abstract set suppressDynamicTranslationErrors(value: boolean);
 
   enter(
     elementName: string,
@@ -73,12 +55,13 @@ export abstract class HtmlParseContext {
 }
 
 export class DocumentContext extends HtmlParseContext {
+  public suppressDynamicTranslationErrors = false;
+
   constructor(
     private readonly loader: TranslateLoaderContext,
     private readonly html: string
   ) {
     super();
-    this.suppressDynamicTranslationErrors = false;
   }
 
   leave(): never {
@@ -87,11 +70,15 @@ export class DocumentContext extends HtmlParseContext {
 
   emitError(message: string, position: number) {
     const loc = this.loc(position);
-    message = `Failed to extract the angular-translate translations from ${
-      this.loader.resource
-    }:${loc.line}:${loc.column}: ${message}`;
+    const relativePath = path.relative(
+      this.loader.context,
+      this.loader.resourcePath
+    );
+    message = `Failed to extract the angular-translate translations from '${relativePath}':${
+      loc.line
+    }:${loc.column}: ${message}`;
 
-    this.loader.emitError(message);
+    this.loader.emitError(new Error(message));
   }
 
   asHtml(): string {

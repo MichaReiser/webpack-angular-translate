@@ -1,4 +1,5 @@
-import htmlparser = require("htmlparser2");
+import * as path from "path";
+import * as htmlparser from "htmlparser2";
 
 import Translation from "../translation";
 import ElementContext, {
@@ -7,12 +8,12 @@ import ElementContext, {
 } from "./element-context";
 import {
   HtmlTranslationExtractor,
-  HtmlTranslationExtractionContext
+  HtmlTranslationExtractionContext,
+  TranslationOccurrence
 } from "./html-translation-extractor";
 import TranslateLoaderContext from "../translate-loader-context";
-import { matchAngularExpressions, AngularExpressionMatch } from "./ng-filters";
+import { matchAngularExpressions } from "./ng-filters";
 import { AngularElement } from "./html-translation-extractor";
-import { ContextReplacementPlugin } from "webpack";
 
 export const SUPPRESS_ATTRIBUTE_NAME = "suppress-dynamic-translation-error";
 const angularExpressionRegex = /^{{.*}}$/;
@@ -121,23 +122,17 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
     };
   }
 
-  private registerTranslation(translation: {
-    translationId: string;
-    defaultText?: string;
-    position: number;
-  }) {
+  private registerTranslation(translation: TranslationOccurrence) {
     if (
       isAngularExpression(translation.translationId) ||
       isAngularExpression(translation.defaultText)
     ) {
       this.context.emitSuppressableError(
-        `The element '${this.context.asHtml()}'  in '${
-          this.loader.resource
-        }' uses an angular expression as translation id ('${
+        `The element '${this.context.asHtml()}' uses an angular expression as translation id ('${
           translation.translationId
         }') or as default text ('${
           translation.defaultText
-        }'), this is not supported. To suppress this error at the '${SUPPRESS_ATTRIBUTE_NAME}' attribute to the element or any of its parents.`,
+        }'). This is not supported. Either use a string literal as translation id and default text or suppress this error by adding the '${SUPPRESS_ATTRIBUTE_NAME}' attribute to this element or any of its parents.`,
         translation.position
       );
       return;
@@ -145,7 +140,7 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
 
     this.loader.registerTranslation(
       new Translation(translation.translationId, translation.defaultText, {
-        resource: this.loader.resource,
+        resource: path.relative(this.loader.context, this.loader.resourcePath),
         loc: this.context.loc(translation.position)
       })
     );

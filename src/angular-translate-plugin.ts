@@ -6,7 +6,6 @@ import TranslationsRegistry, {
   TranslationRegistrationError,
   EmptyTranslationIdError
 } from "./translations-registry";
-import TranslateLoaderContext from "./translate-loader-context";
 
 interface TranslateOptions {
   /**

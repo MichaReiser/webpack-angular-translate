@@ -18,7 +18,7 @@ export class TranslationRegistrationError extends Error {
 export class EmptyTranslationIdError extends TranslationRegistrationError {
   constructor(translation: Translation) {
     super(
-      `Invalid angular-translate translation '${translation}' found. The id of the translation is empty, consider removing the translate attribute (html) or defining the translation id (js).`
+      `Invalid angular-translate translation found: The id of the translation is empty. Consider removing the translate attribute (html) or defining the translation id (js).\nTranslation:\n'${translation}'`
     );
     setProto(this, EmptyTranslationIdError.prototype);
   }
@@ -26,11 +26,11 @@ export class EmptyTranslationIdError extends TranslationRegistrationError {
 
 export class TranslationMergeError extends TranslationRegistrationError {
   constructor(
-    private existing: Translation,
-    private newTranslation: Translation
+    public existing: Translation,
+    public newTranslation: Translation
   ) {
     super(
-      `Webpack-Angular-Translate: Two translations with the same id but different default text found.\n\tExisting: ${existing}\n\tnew: ${newTranslation}\n\tPlease define the same default text twice or specify the default text only once.`
+      `Webpack-Angular-Translate: Two translations with the same id but different default text found.\n\tExisting: ${existing}\n\tNew: ${newTranslation}\n\tPlease define the same default text twice or specify the default text only once.`
     );
   }
 }
