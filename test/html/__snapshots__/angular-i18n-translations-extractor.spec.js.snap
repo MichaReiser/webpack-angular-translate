@@ -32,6 +32,14 @@ Array [
 ]
 `;
 
+exports[`StatefulHtmlParserSpecs <any i18n> emits an error if the element contains multiple child nodes 1`] = `
+Array [
+  Array [
+    [Error: Failed to extract the angular-translate translations from 'test.html':1:0: The element <div i18n='@@Simple Case id'>Created by  at 13:34</div> has multiple child elements and, therefore, the default translation cannot be extracted.],
+  ],
+]
+`;
+
 exports[`StatefulHtmlParserSpecs <any i18n> emits an error if the value of the translate id is an expression 1`] = `
 Array [
   Array [

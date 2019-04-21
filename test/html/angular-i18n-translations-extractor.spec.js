@@ -52,6 +52,15 @@ describe("StatefulHtmlParserSpecs", function() {
       expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
     });
 
+    it("emits an error if the element contains multiple child nodes", function() {
+      parse(
+        "<div i18n='@@Simple Case id'>Created by <b>Thomas Muster</b> at 13:34</div>"
+      );
+
+      expect(loaderContext).toHaveEmittedErrorMatchingSnapshot();
+      expect(loaderContext.registerTranslation).not.toHaveBeenCalled();
+    });
+
     it("emits an error if the content of the element is an expression", function() {
       parse("<div i18n='@@Simple Case id'>{{someValue}}</div>");
 

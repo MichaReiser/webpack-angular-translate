@@ -36,11 +36,11 @@ export default function angularI18nTranslationsExtractor(
     handleTranslationsOfElements(element, context, i18nElementTranslation);
   }
 
-  const i18nAttributeTranslation = element.attributes.filter(attribute =>
+  const i18nAttributeTranslations = element.attributes.filter(attribute =>
     I18N_ATTRIBUTE_REGEX.test(attribute.name)
   );
 
-  handleTranslationsOfAttributes(element, context, i18nAttributeTranslation);
+  handleTranslationsOfAttributes(element, context, i18nAttributeTranslations);
 }
 
 function handleTranslationsOfElements(
@@ -48,19 +48,26 @@ function handleTranslationsOfElements(
   context: HtmlTranslationExtractionContext,
   attribute: Attribute
 ): void {
-  const translationId = extractTranslationId(attribute, context);
+  const translationIdExtraction = extractTranslationId(attribute, context);
 
-  if (element.texts.length > 0 && translationId) {
-    context.registerTranslation({
-      translationId: translationId,
-      defaultText: element.texts[0].text,
-      position: element.startPosition
-    });
+  if (translationIdExtraction.valid === false) {
+    context.emitError(translationIdExtraction.error, attribute.startPosition);
   } else if (element.texts.length === 0) {
     context.emitError(
       `The element ${context.asHtml()} with attribute  ${
         attribute.name
       } is empty and is therefore missing the default translation.`,
+      attribute.startPosition
+    );
+  } else if (element.texts.length === 1) {
+    context.registerTranslation({
+      translationId: translationIdExtraction.translationId,
+      defaultText: element.texts[0].text,
+      position: element.startPosition
+    });
+  } else if (element.texts.length > 1) {
+    context.emitError(
+      `The element ${context.asHtml()} has multiple child elements and, therefore, the default translation cannot be extracted.`,
       attribute.startPosition
     );
   }
@@ -81,10 +88,15 @@ function handleAttribute(
   context: HtmlTranslationExtractionContext,
   i18nAttribute: Attribute
 ): void {
-  const translationId = extractTranslationId(i18nAttribute, context);
-  if (!translationId) {
+  const translationIdExtraction = extractTranslationId(i18nAttribute, context);
+  if (translationIdExtraction.valid === false) {
+    context.emitError(
+      translationIdExtraction.error,
+      i18nAttribute.startPosition
+    );
     return;
   }
+
   const attributeName = i18nAttribute.name.substr(
     `${I18N_ATTRIBUTE_NAME}-`.length
   );
@@ -115,7 +127,7 @@ function handleAttribute(
   }
 
   context.registerTranslation({
-    translationId: translationId,
+    translationId: translationIdExtraction.translationId,
     defaultText: defaultText,
     position: i18nAttribute.startPosition
   });
@@ -124,23 +136,26 @@ function handleAttribute(
 function extractTranslationId(
   attribute: Attribute,
   context: HtmlTranslationExtractionContext
-): string {
+): { valid: true; translationId: string } | { valid: false; error: string } {
   const index = attribute.value.indexOf(ID_INDICATOR);
   if (index < 0) {
-    context.emitError(
-      `The attribute ${
+    return {
+      valid: false,
+      error: `The attribute ${
         attribute.name
-      } on element ${context.asHtml()} attribute is missing the custom id indicator '${ID_INDICATOR}'.`,
-      attribute.startPosition
-    );
+      } on element ${context.asHtml()} attribute is missing the custom id indicator '${ID_INDICATOR}'.`
+    };
   } else if (index + ID_INDICATOR.length === attribute.value.length) {
-    context.emitError(
-      `The attribute ${
+    return {
+      valid: false,
+      error: `The attribute ${
         attribute.name
-      } on element ${context.asHtml()} defines an empty ID.`,
-      attribute.startPosition
-    );
+      } on element ${context.asHtml()} defines an empty ID.`
+    };
   } else {
-    return attribute.value.substr(index + ID_INDICATOR.length);
+    return {
+      valid: true,
+      translationId: attribute.value.substr(index + ID_INDICATOR.length)
+    };
   }
 }
