@@ -1,4 +1,7 @@
 export { default as Plugin } from "./angular-translate-plugin";
+export {
+  default as angularI18nTranslationsExtractor
+} from "./html/angular-i18n-translations-extractor";
 
 export function htmlLoader(before: string, options: any): string {
   const loader = require.resolve("./html/html-loader");

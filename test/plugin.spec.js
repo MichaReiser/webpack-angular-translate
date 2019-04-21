@@ -18,10 +18,19 @@ import "./translate-jest-matchers";
  * @param assertCallback {function({}, {})} Callback that contains the assert statements. the first argument
  * is the source of the translations file. The webpack stats (containing warnings and errors) is passed as second argument.
  */
-async function compileAndGetTranslations(fileName) {
-  var options = webpackOptions({
-    entry: ["./test/cases/" + fileName]
-  });
+async function compileAndGetTranslations(
+  fileName,
+  customTranslationExtractors
+) {
+  if (!customTranslationExtractors) {
+    customTranslationExtractors = [];
+  }
+  var options = webpackOptions(
+    {
+      entry: ["./test/cases/" + fileName]
+    },
+    customTranslationExtractors
+  );
 
   const { error, stats, volume } = await compile(options);
   expect(error).toBeFalsy();
@@ -36,7 +45,7 @@ async function compileAndGetTranslations(fileName) {
   return { translations, stats };
 }
 
-function webpackOptions(options) {
+function webpackOptions(options, customTranslationExtractors) {
   "use strict";
   return deepExtend(
     {
@@ -57,7 +66,10 @@ function webpackOptions(options) {
                 }
               },
               {
-                loader: WebPackAngularTranslate.htmlLoader()
+                loader: WebPackAngularTranslate.htmlLoader(),
+                options: {
+                  translationExtractors: customTranslationExtractors
+                }
               }
             ]
           },
@@ -311,6 +323,20 @@ Array [
         "html-with-dollar-attribute.html"
       );
       expect(translations).toMatchObject({ Test: "Test" });
+    });
+  });
+
+  it("can be used with the angular i18n translation extractor", async function() {
+    "use strict";
+
+    const { translations } = await compileAndGetTranslations(
+      "translate-and-i18n.html",
+      [WebPackAngularTranslate.angularI18nTranslationsExtractor]
+    );
+
+    expect(translations).toMatchObject({
+      translateId: "Translate translation",
+      i18nId: "I18n translation"
     });
   });
 });
