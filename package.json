@@ -34,6 +34,7 @@
     "@babel/preset-typescript": "^7.3.3",
     "@types/acorn": "^4.0.5",
     "@types/cheerio": "^0.22.11",
+    "@types/domhandler": "^2.4.1",
     "@types/escodegen": "^0.0.6",
     "@types/estree": "^0.0.39",
     "@types/htmlparser2": "^3.7.31",
