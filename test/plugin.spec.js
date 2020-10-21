@@ -27,7 +27,7 @@ async function compileAndGetTranslations(
   }
   var options = webpackOptions(
     {
-      entry: ["./test/cases/" + fileName]
+      entry: ["./test/cases/" + fileName],
     },
     customTranslationExtractors
   );
@@ -50,7 +50,7 @@ function webpackOptions(options, customTranslationExtractors) {
   return deepExtend(
     {
       output: {
-        path: path.join(__dirname, "dist")
+        path: path.join(__dirname, "dist"),
       },
       mode: "production",
       module: {
@@ -62,25 +62,25 @@ function webpackOptions(options, customTranslationExtractors) {
                 loader: "html-loader",
                 options: {
                   removeEmptyAttributes: false,
-                  attrs: []
-                }
+                  attrs: [],
+                },
               },
               {
                 loader: WebPackAngularTranslate.htmlLoader(),
                 options: {
-                  translationExtractors: customTranslationExtractors
-                }
-              }
-            ]
+                  translationExtractors: customTranslationExtractors,
+                },
+              },
+            ],
           },
           {
             test: /\.js/,
-            loader: WebPackAngularTranslate.jsLoader()
-          }
-        ]
+            loader: WebPackAngularTranslate.jsLoader(),
+          },
+        ],
       },
 
-      plugins: [new WebPackAngularTranslate.Plugin()]
+      plugins: [new WebPackAngularTranslate.Plugin()],
     },
     options
   );
@@ -92,20 +92,20 @@ function compile(options) {
   compiler.outputFileSystem = new VolumeOutputFileSystem(volume);
 
   return new Promise((resolve, reject) => {
-    compiler.run(function(error, stats) {
+    compiler.run(function (error, stats) {
       resolve({ error, stats, volume });
     });
   });
 }
 
-describe("HTML Loader", function() {
+describe("HTML Loader", function () {
   "use strict";
 
-  it("emits a useful error message if the plugin is missing", async function() {
+  it("emits a useful error message if the plugin is missing", async function () {
     const { error, stats } = await compile({
       entry: "./test/cases/simple.html",
       output: {
-        path: path.join(__dirname, "dist")
+        path: path.join(__dirname, "dist"),
       },
       module: {
         rules: [
@@ -116,20 +116,20 @@ describe("HTML Loader", function() {
                 loader: "html-loader",
                 options: {
                   removeEmptyAttributes: false,
-                  attrs: []
-                }
+                  attrs: [],
+                },
               },
               {
-                loader: WebPackAngularTranslate.htmlLoader()
-              }
-            ]
+                loader: WebPackAngularTranslate.htmlLoader(),
+              },
+            ],
           },
           {
             test: /\.js/,
-            loader: WebPackAngularTranslate.jsLoader()
-          }
-        ]
-      }
+            loader: WebPackAngularTranslate.jsLoader(),
+          },
+        ],
+      },
     });
 
     expect(error).toBeNull();
@@ -140,39 +140,39 @@ Array [
 `);
   });
 
-  describe("directive", function() {
+  describe("directive", function () {
     "use strict";
 
-    it("extracts the translation id if translate is used as attribute", async function() {
+    it("extracts the translation id if translate is used as attribute", async function () {
       const { translations } = await compileAndGetTranslations("simple.html");
 
       expect(translations).toMatchObject({
-        "attribute-translation": "attribute-translation"
+        "attribute-translation": "attribute-translation",
       });
     });
 
-    it("extracts the translation id if translate is used as element", async function() {
+    it("extracts the translation id if translate is used as element", async function () {
       const { translations } = await compileAndGetTranslations("simple.html");
       expect(translations).toMatchObject({
-        "element-translation": "element-translation"
+        "element-translation": "element-translation",
       });
     });
 
-    it("extracts the translation id from the attribute if specified", async function() {
+    it("extracts the translation id from the attribute if specified", async function () {
       const { translations } = await compileAndGetTranslations("simple.html");
       expect(translations).toMatchObject({
-        "id-in-attribute": "id-in-attribute"
+        "id-in-attribute": "id-in-attribute",
       });
     });
 
-    it("extracts the default text if translate is used as attribute", async function() {
+    it("extracts the default text if translate is used as attribute", async function () {
       const { translations } = await compileAndGetTranslations(
         "defaultText.html"
       );
       expect(translations).toMatchObject({ Login: "Anmelden" });
     });
 
-    it("extracts the default text if translate is used as element", async function() {
+    it("extracts the default text if translate is used as element", async function () {
       const { translations } = await compileAndGetTranslations(
         "defaultText.html"
       );
@@ -180,25 +180,25 @@ Array [
       expect(translations).toMatchObject({ Logout: "Abmelden" });
     });
 
-    it("extracts the translation id if a translation for an attribute is defined", async function() {
+    it("extracts the translation id if a translation for an attribute is defined", async function () {
       const { translations } = await compileAndGetTranslations(
         "attributes.html"
       );
       expect(translations).toMatchObject({
-        "attribute-id": "attribute-id"
+        "attribute-id": "attribute-id",
       });
     });
 
-    it("extracts the default text for an attribute translation", async function() {
+    it("extracts the default text for an attribute translation", async function () {
       const { translations } = await compileAndGetTranslations(
         "attributes.html"
       );
       expect(translations).toMatchObject({
-        "attribute-default-id": "Default text for attribute title"
+        "attribute-default-id": "Default text for attribute title",
       });
     });
 
-    it("emits an error if an angular expression is used as attribute id", async function() {
+    it("emits an error if an angular expression is used as attribute id", async function () {
       const { stats } = await compileAndGetTranslations("expressions.html");
 
       expect(stats.compilation.errors).toMatchInlineSnapshot(`
@@ -220,7 +220,7 @@ Array [
 `);
     });
 
-    it("does suppress errors for dynamic translations if the element is attributed with suppress-dynamic-translation-error", async function() {
+    it("does suppress errors for dynamic translations if the element is attributed with suppress-dynamic-translation-error", async function () {
       const { translations, stats } = await compileAndGetTranslations(
         "expressions-suppressed.html"
       );
@@ -228,7 +228,7 @@ Array [
       expect(translations).toEqual({});
     });
 
-    it("removes the suppress-dynamic-translation-error attribute for non dev build", async function() {
+    it("removes the suppress-dynamic-translation-error attribute for non dev build", async function () {
       const { stats } = await compileAndGetTranslations(
         "expressions-suppressed.html"
       );
@@ -239,39 +239,39 @@ Array [
     });
   });
 
-  describe("filter", function() {
-    it("matches a filter in the body of an element", async function() {
+  describe("filter", function () {
+    it("matches a filter in the body of an element", async function () {
       const { translations } = await compileAndGetTranslations(
         "filter-simple.html"
       );
       expect(translations).toMatchObject({ Home: "Home" });
     });
 
-    it("matches a filter in an attribute of an element", async function() {
+    it("matches a filter in an attribute of an element", async function () {
       const { translations } = await compileAndGetTranslations(
         "filter-simple.html"
       );
       expect(translations).toMatchObject({ Waterfall: "Waterfall" });
     });
 
-    it("matches an expression in the middle of the element text content", async function() {
+    it("matches an expression in the middle of the element text content", async function () {
       const { translations } = await compileAndGetTranslations(
         "filter-simple.html"
       );
       expect(translations).toMatchObject({ Top: "Top" });
     });
 
-    it("matches multiple expressions in a single text", async function() {
+    it("matches multiple expressions in a single text", async function () {
       const { translations } = await compileAndGetTranslations(
         "multiple-filters.html"
       );
       expect(translations).toMatchObject({
         Result: "Result",
-        of: "of"
+        of: "of",
       });
     });
 
-    it("emits an error if a dynamic value is used in the translate filter", async function() {
+    it("emits an error if a dynamic value is used in the translate filter", async function () {
       const { translations, stats } = await compileAndGetTranslations(
         "dynamic-filter-expression.html"
       );
@@ -284,7 +284,7 @@ Array [
       expect(translations).toEqual({});
     });
 
-    it("emits an error if a filter is used before the translate filter", async function() {
+    it("emits an error if a filter is used before the translate filter", async function () {
       const { translations, stats } = await compileAndGetTranslations(
         "filter-chain.html"
       );
@@ -297,28 +297,28 @@ Array [
       expect(translations).toEqual({});
     });
 
-    it("suppress dynamic translations errors if element or parent is attribute with suppress-dynamic-translation-error", async function() {
+    it("suppress dynamic translations errors if element or parent is attribute with suppress-dynamic-translation-error", async function () {
       const { stats } = await compileAndGetTranslations(
         "dynamic-filter-expression-suppressed.html"
       );
       expect(stats.compilation.errors).toMatchInlineSnapshot(`Array []`);
     });
 
-    it("suppress dynamic translations errors for custom elements when attributed with suppress-dynamic-translation-error", async function() {
+    it("suppress dynamic translations errors for custom elements when attributed with suppress-dynamic-translation-error", async function () {
       const { stats } = await compileAndGetTranslations(
         "dynamic-filter-custom-element.html"
       );
       expect(stats.compilation.errors).toMatchInlineSnapshot(`Array []`);
     });
 
-    it("can parse an invalid html file", async function() {
+    it("can parse an invalid html file", async function () {
       const { translations } = await compileAndGetTranslations(
         "invalid-html.html"
       );
       expect(translations).toMatchObject({ Result: "Result" });
     });
 
-    it("can parse an html containing an attribute that starts with a $", async function() {
+    it("can parse an html containing an attribute that starts with a $", async function () {
       const { translations } = await compileAndGetTranslations(
         "html-with-dollar-attribute.html"
       );
@@ -326,38 +326,39 @@ Array [
     });
   });
 
-  it("can be used with the angular i18n translation extractor", async function() {
+  it("can be used with the angular i18n translation extractor", async function () {
     "use strict";
 
-    const { translations } = await compileAndGetTranslations(
-      "translate-and-i18n.html",
-      [WebPackAngularTranslate.angularI18nTranslationsExtractor]
-    );
+    const {
+      translations,
+    } = await compileAndGetTranslations("translate-and-i18n.html", [
+      WebPackAngularTranslate.angularI18nTranslationsExtractor,
+    ]);
 
     expect(translations).toMatchObject({
       translateId: "Translate translation",
-      i18nId: "I18n translation"
+      i18nId: "I18n translation",
     });
   });
 });
 
-describe("JSLoader", function() {
+describe("JSLoader", function () {
   "use strict";
 
-  it("emits a useful error message if the plugin is missing", async function() {
+  it("emits a useful error message if the plugin is missing", async function () {
     const { error, stats } = await compile({
       entry: "./test/cases/simple.js",
       output: {
-        path: path.join(__dirname, "dist")
+        path: path.join(__dirname, "dist"),
       },
       module: {
         rules: [
           {
             test: /\.js/,
-            loader: WebPackAngularTranslate.jsLoader()
-          }
-        ]
-      }
+            loader: WebPackAngularTranslate.jsLoader(),
+          },
+        ],
+      },
     });
 
     expect(error).toBeNull();
@@ -368,11 +369,11 @@ Array [
 `);
   });
 
-  it("passes the acorn parser options to acorn (in this case, allows modules)", async function() {
+  it("passes the acorn parser options to acorn (in this case, allows modules)", async function () {
     const { error, stats } = await compile({
       entry: "./test/cases/es-module.js",
       output: {
-        path: path.join(__dirname, "dist")
+        path: path.join(__dirname, "dist"),
       },
       module: {
         rules: [
@@ -381,82 +382,82 @@ Array [
             loader: WebPackAngularTranslate.jsLoader(),
             options: {
               parserOptions: {
-                sourceType: "module"
-              }
-            }
-          }
-        ]
+                sourceType: "module",
+              },
+            },
+          },
+        ],
       },
-      plugins: [new WebPackAngularTranslate.Plugin()]
+      plugins: [new WebPackAngularTranslate.Plugin()],
     });
     expect(error).toBeNull();
     expect(stats.compilation.errors).toMatchInlineSnapshot(`Array []`);
   });
 
-  describe("$translate", function() {
-    it("extracts the translation id when the $translate service is used as global variable ($translate)", async function() {
+  describe("$translate", function () {
+    it("extracts the translation id when the $translate service is used as global variable ($translate)", async function () {
       const { translations } = await compileAndGetTranslations("simple.js");
       expect(translations).toMatchObject({
-        "global variable": "global variable"
+        "global variable": "global variable",
       });
     });
 
-    it("extracts the translation id when the $translate service is used in the constructor", async function() {
+    it("extracts the translation id when the $translate service is used in the constructor", async function () {
       const { translations } = await compileAndGetTranslations("simple.js");
       expect(translations).toMatchObject({
-        "translate in constructor": "translate in constructor"
+        "translate in constructor": "translate in constructor",
       });
     });
 
-    it("extracts the translation id when the $translate service is used in an arrow function (() => this.$translate)", async function() {
+    it("extracts the translation id when the $translate service is used in an arrow function (() => this.$translate)", async function () {
       const { translations } = await compileAndGetTranslations("simple.js");
       expect(translations).toMatchObject({
-        "translate in arrow function": "translate in arrow function"
+        "translate in arrow function": "translate in arrow function",
       });
     });
 
-    it("extracts the translation id when the $translate service is used in a member function (this.$translate)", async function() {
+    it("extracts the translation id when the $translate service is used in a member function (this.$translate)", async function () {
       const { translations } = await compileAndGetTranslations("simple.js");
       expect(translations).toMatchObject({
-        "this-translate": "this-translate"
+        "this-translate": "this-translate",
       });
     });
 
-    it("extracts multiple translation id's when an array is passed as argument", async function() {
+    it("extracts multiple translation id's when an array is passed as argument", async function () {
       const { translations } = await compileAndGetTranslations("array.js");
       expect(translations).toMatchObject({
         FIRST_PAGE: "FIRST_PAGE",
-        Next: "Next"
+        Next: "Next",
       });
     });
 
-    it("extracts instant translation id", async function() {
+    it("extracts instant translation id", async function () {
       const { translations } = await compileAndGetTranslations("instant.js");
       expect(translations).toMatchObject({
         FIRST_TRANSLATION: "FIRST_TRANSLATION",
-        SECOND_TRANSLATION: "SECOND_TRANSLATION"
+        SECOND_TRANSLATION: "SECOND_TRANSLATION",
       });
       expect(translations).not.toHaveProperty("SKIPPED_TRANSLATION");
     });
 
-    it("extracts the default text", async function() {
+    it("extracts the default text", async function () {
       const { translations } = await compileAndGetTranslations(
         "defaultText.js"
       );
       expect(translations).toMatchObject({ Next: "Weiter" });
     });
 
-    it("extracts the default text when an array is passed for the id's", async function() {
+    it("extracts the default text when an array is passed for the id's", async function () {
       const { translations } = await compileAndGetTranslations(
         "defaultText.js"
       );
       expect(translations).toMatchObject({
         FIRST_PAGE: "Missing",
-        LAST_PAGE: "Missing"
+        LAST_PAGE: "Missing",
       });
     });
 
-    it("emits errors if $translate is used with invalid arguments", async function() {
+    it("emits errors if $translate is used with invalid arguments", async function () {
       const { translations, stats } = await compileAndGetTranslations(
         "invalid$translate.js"
       );
@@ -470,7 +471,7 @@ Array [
       expect(translations).toEqual({});
     });
 
-    it("a comment suppress the dynamic translation errors for $translate", async function() {
+    it("a comment suppress the dynamic translation errors for $translate", async function () {
       const { translations, stats } = await compileAndGetTranslations(
         "translateSuppressed.js"
       );
@@ -484,8 +485,8 @@ Array [
     });
   });
 
-  describe("i18n.registerTranslation", function() {
-    it("register translation", async function() {
+  describe("i18n.registerTranslation", function () {
+    it("register translation", async function () {
       const { translations, stats } = await compileAndGetTranslations(
         "registerTranslation.js"
       );
@@ -494,11 +495,11 @@ Array [
       expect(translations).toEqual({
         NEW_USER: "New user",
         EDIT_USER: "Edit user",
-        "5": "true"
+        5: "true",
       });
     });
 
-    it("register translation with invalid arguments", async function() {
+    it("register translation with invalid arguments", async function () {
       const { translations, stats } = await compileAndGetTranslations(
         "registerInvalidTranslation.js"
       );
@@ -513,8 +514,8 @@ Array [
     });
   });
 
-  describe("i18n.registerTranslations", function() {
-    it("register translations", async function() {
+  describe("i18n.registerTranslations", function () {
+    it("register translations", async function () {
       const { translations, stats } = await compileAndGetTranslations(
         "registerTranslations.js"
       );
@@ -524,11 +525,11 @@ Array [
         Login: "Anmelden",
         Logout: "Abmelden",
         Next: "Weiter",
-        Back: "Zurück"
+        Back: "Zurück",
       });
     });
 
-    it("warns about invalid translation registrations", async function() {
+    it("warns about invalid translation registrations", async function () {
       const { translations, stats } = await compileAndGetTranslations(
         "registerInvalidTranslations.js"
       );
@@ -544,8 +545,8 @@ Array [
   });
 });
 
-describe("Plugin", function() {
-  it("emits an error if the same id with different default texts is used", async function() {
+describe("Plugin", function () {
+  it("emits an error if the same id with different default texts is used", async function () {
     const { translations, stats } = await compileAndGetTranslations(
       "differentDefaultTexts.js"
     );
@@ -573,7 +574,7 @@ Array [
     expect(translations).toEqual({});
   });
 
-  it("emits a warning if the translation id is missing", async function() {
+  it("emits a warning if the translation id is missing", async function () {
     const { translations, stats } = await compileAndGetTranslations(
       "emptyTranslate.html"
     );
@@ -596,7 +597,7 @@ Translation:
     expect(translations).toEqual({});
   });
 
-  it("does not add translations twice if file is recompiled after change", async function() {
+  it("does not add translations twice if file is recompiled after change", async function () {
     const projectVolume = Volume.fromJSON(
       {
         "./fileChange.js":
@@ -606,7 +607,7 @@ Translation:
           "i18n.registerTranslation('WillBeDeleted', 'Delete');",
 
         "./otherFile.js":
-          "i18n.registerTranslation('DELETE_USER', 'Delete User');"
+          "i18n.registerTranslation('DELETE_USER', 'Delete User');",
       },
       path.join(__dirname, "..")
     );
@@ -614,7 +615,7 @@ Translation:
     const outputVolume = Volume.fromJSON({}, __dirname);
 
     var options = webpackOptions({
-      entry: "./fileChange.js"
+      entry: "./fileChange.js",
     });
     var compiler = webpack(options);
     compiler.inputFileSystem = inputFs;
@@ -622,7 +623,7 @@ Translation:
 
     var secondCompilationStats = await new Promise((resolve, reject) => {
       var firstRun = true;
-      var watching = compiler.watch({}, function(error, stats) {
+      var watching = compiler.watch({}, function (error, stats) {
         if (error) {
           return reject(error);
         }
@@ -653,7 +654,7 @@ Translation:
 
     expect(translations).toEqual({
       NEW_USER: "Neuer Benutzer",
-      DELETE_USER: "Delete User"
+      DELETE_USER: "Delete User",
     });
   });
 });

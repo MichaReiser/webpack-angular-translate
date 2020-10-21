@@ -1,5 +1,6 @@
 import * as path from "path";
-import * as htmlparser from "htmlparser2";
+import type {DomHandler} from "domhandler";
+import {Parser} from 'htmlparser2';
 
 import Translation from "../translation";
 import ElementContext, {
@@ -29,9 +30,9 @@ function isAngularExpression(value: string): boolean {
  * Attributes translated with the translate filter are handled in the opentag event
  * Expressions used in the body of an element are translated in the text event.
  */
-export default class TranslateHtmlParser implements htmlparser.Handler {
+export default class TranslateHtmlParser implements Partial<DomHandler> {
   context: HtmlParseContext;
-  parser: htmlparser.Parser;
+  parser: Parser;
 
   constructor(
     private loader: TranslateLoaderContext,
@@ -42,7 +43,7 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
 
   parse(html: string): void {
     this.context = new DocumentContext(this.loader, html);
-    this.parser = new htmlparser.Parser(this, { decodeEntities: true });
+    this.parser = new Parser(this, { decodeEntities: true });
     this.parser.parseComplete(html);
 
     this.context = this.parser = null;
@@ -76,31 +77,24 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
     });
   }
 
-  onclosetag(name: string): void {
+  onclosetag(): void {
     if (!(this.context instanceof ElementContext)) {
       throw new Error("onopentag did not create an element context");
     }
 
-    if (this.context.tagName !== name) {
-      this.context.emitSuppressableError(
-        "Error parsing html, close tag does not match open tag",
-        this.context.elementStartPosition
-      );
-    } else {
-      const element: AngularElement = {
-        tagName: this.context.tagName,
-        attributes: this.context.attributes,
-        texts: this.context.texts,
-        startPosition: this.context.elementStartPosition
-      };
+    const element: AngularElement = {
+      tagName: this.context.tagName,
+      attributes: this.context.attributes,
+      texts: this.context.texts,
+      startPosition: this.context.elementStartPosition
+    };
 
-      const extractorContext = this.createExtractorContext();
+    const extractorContext = this.createExtractorContext();
 
-      for (const extractor of this.translationExtractors) {
-        extractor(element, extractorContext);
-      }
+    for (const extractor of this.translationExtractors) {
+      extractor(element, extractorContext);
     }
-
+    
     this.context = this.context.leave();
   }
 
@@ -147,6 +141,6 @@ export default class TranslateHtmlParser implements htmlparser.Handler {
   }
 }
 
-function getStartIndex(parser: htmlparser.Parser): number {
+function getStartIndex(parser: Parser): number {
   return (parser as any).startIndex;
 }

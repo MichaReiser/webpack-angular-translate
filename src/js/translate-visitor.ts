@@ -1,24 +1,16 @@
 import * as path from "path";
-import types, { NodePath } from "ast-types";
+import type {NodePath} from "ast-types/lib/node-path";
+import {namedTypes as n, builders as b, PathVisitor} from "ast-types";
 import { Context } from "ast-types/lib/path-visitor";
-import {
-  CallExpression,
-  Literal,
-  ArrayExpression,
-  ObjectExpression,
-  Identifier,
-  Node,
-  MemberExpression
-} from "ast-types/gen/nodes";
+import type { namedTypes } from "ast-types";
 import Translation from "../translation";
 import TranslateLoaderContext from "../translate-loader-context";
 
-const { namedTypes: n, builders: b } = types;
 const TRANSLATE_SERVICE_NAME = "$translate";
 
 export default function createTranslateVisitor(
   loader: TranslateLoaderContext,
-  parserOptions: acorn.Options = {}
+  parserOptions: acorn.Options = { ecmaVersion: "latest" }
 ) {
   let context: Context = null;
   const comments: acorn.Comment[] = [];
@@ -34,7 +26,7 @@ export default function createTranslateVisitor(
    * Handles a $translate(translateId, interpolateParams, interpolationId, defaultText) call.
    * @param path the path to the call expression
    */
-  function visitTranslate(path: NodePath<CallExpression>): void {
+  function visitTranslate(path: NodePath<namedTypes.CallExpression>): void {
     const call = path.node;
     const args = call.arguments;
 
@@ -55,19 +47,19 @@ export default function createTranslateVisitor(
   }
 
   function getTranslationIdFromTranslateCall(
-    path: NodePath<CallExpression>
+    path: NodePath<namedTypes.CallExpression>
   ): any[] {
     const args = path.node.arguments;
 
     if (n.Literal.check(args[0])) {
-      return [(<Literal>args[0]).value];
+      return [args[0].value];
     }
 
     if (n.ArrayExpression.check(args[0])) {
-      const arrayExpression = <ArrayExpression>args[0];
+      const arrayExpression = args[0];
       return arrayExpression.elements.map(element => {
         if (n.Literal.check(element)) {
-          return (<Literal>element).value;
+          return element.value;
         }
         throwSuppressableError(
           "The array with the translation ids should only contain literals",
@@ -83,13 +75,13 @@ export default function createTranslateVisitor(
   }
 
   function getDefaultTextFromTranslateCall(
-    path: NodePath<CallExpression>
+    path: NodePath<namedTypes.CallExpression>
   ): any {
     const args = path.node.arguments;
 
     if (args.length > 3) {
       if (n.Literal.check(args[3])) {
-        return (<Literal>args[3]).value;
+        return args[3].value;
       }
 
       throwSuppressableError(
@@ -107,7 +99,7 @@ export default function createTranslateVisitor(
    * translation id.
    * @param path of the call expression.
    */
-  function visitRegisterTranslation(path: NodePath<CallExpression>): void {
+  function visitRegisterTranslation(path: NodePath<namedTypes.CallExpression>): void {
     const call = path.node,
       args = call.arguments;
 
@@ -118,12 +110,12 @@ export default function createTranslateVisitor(
       );
     }
 
-    const translationId = (<Literal>args[0]).value;
+    const translationId = args[0].value;
     let defaultText: any;
 
     if (args.length > 1) {
       if (n.Literal.check(args[1])) {
-        defaultText = <string>(<Literal>args[1]).value;
+        defaultText = <string>args[1].value;
       } else {
         throwError(
           "Illegal argument for call to i18n.registerTranslation: the default text has to be a literal",
@@ -158,9 +150,7 @@ export default function createTranslateVisitor(
       );
     }
 
-    const translations: Translation[] = (<ObjectExpression>(
-      translationsArgument
-    )).properties.map(property => {
+    const translations: Translation[] = (translationsArgument).properties.map(property => {
       let translationId: any;
       let defaultText: any;
 
@@ -177,9 +167,9 @@ export default function createTranslateVisitor(
       }
 
       if (n.Identifier.check(property.key)) {
-        translationId = (<Identifier>property.key).name;
+        translationId = property.key.name;
       } else if (n.Literal.check(property.key)) {
-        translationId = (<Literal>property.key).value;
+        translationId = property.key.value;
       } else {
         throwError(
           "Illegal argument for call to i18n.registerTranslations: The key needs to be a literal or an identifier.",
@@ -188,7 +178,7 @@ export default function createTranslateVisitor(
       }
 
       if (n.Literal.check(property.value)) {
-        defaultText = (<Literal>property.value).value;
+        defaultText = property.value.value;
       } else {
         throwError(
           `Illegal argument for call to i18n.registerTranslations: The value for the key '${translationId}' needs to be a literal`,
@@ -212,7 +202,7 @@ export default function createTranslateVisitor(
   function createTranslation(
     translationId: any,
     defaultText: any,
-    node: Node
+    node: namedTypes.Node
   ): Translation {
     const idAsString = valueToString(translationId, "");
     const defaultTextAsString = valueToString(defaultText, undefined);
@@ -227,14 +217,14 @@ export default function createTranslateVisitor(
    * @param call the call expression
    * @returns {string} the name of the function
    */
-  function getFunctionName(call: CallExpression): string | undefined {
+  function getFunctionName(call: namedTypes.CallExpression): string | undefined {
     var callee = call.callee;
     if (n.Identifier.check(callee)) {
-      return (<Identifier>callee).name;
+      return callee.name;
     } else if (n.MemberExpression.check(callee)) {
-      const property = (<MemberExpression>callee).property;
+      const property = callee.property;
       if (n.Identifier.check(property)) {
-        return (<Identifier>property).name;
+        return property.name;
       }
       return "[expression]";
     } else if (n.FunctionExpression.check(callee)) {
@@ -249,18 +239,18 @@ export default function createTranslateVisitor(
    * @param call the call expression
    * @returns {string} the name of the callee or null if the name could not be determined
    */
-  function getCalleeName(call: CallExpression): string | null {
+  function getCalleeName(call: namedTypes.CallExpression): string | null {
     // this.method() or object.method()
     if (call.callee.type === "MemberExpression") {
-      const member = <MemberExpression>call.callee;
+      const member = call.callee;
       if (member.object.type === "Identifier") {
-        return (<Identifier>member.object).name;
+        return member.object.name;
       } else if (member.object.type === "ThisExpression") {
         return "this";
       } else if (member.object.type == "MemberExpression") {
-        const parent = <MemberExpression>member.object;
+        const parent = member.object;
         if (parent.property.type === "Identifier") {
-          return (<Identifier>parent.property).name;
+          return parent.property.name;
         }
       }
     }
@@ -274,7 +264,7 @@ export default function createTranslateVisitor(
    * @param message the message to emit
    * @param node the node for which a message is emitted
    */
-  function throwError(message: string, node: Node): never {
+  function throwError(message: string, node: namedTypes.Node): never {
     const relativePath = path.relative(loader.context, loader.resourcePath);
     const start = node.loc!.start,
       completeMessage = `${message} (${relativePath}:${start.line}:${
@@ -325,8 +315,8 @@ export default function createTranslateVisitor(
     return "" + value;
   }
 
-  const visitor = types.PathVisitor.fromMethodsObject({
-    visitCallExpression(path: NodePath<CallExpression>): boolean {
+  const visitor = PathVisitor.fromMethodsObject({
+    visitCallExpression(path: NodePath<namedTypes.CallExpression>): boolean {
       context = this;
       const call = path.node,
         functionName = getFunctionName(call),
