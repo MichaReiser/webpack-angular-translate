@@ -22,4 +22,6 @@ export interface HtmlTranslationExtractionContext {
 
 export interface HtmlTranslationExtractor {
   (element: AngularElement, context: HtmlTranslationExtractionContext): void;
+
+  mayContainTranslations?(content: string): boolean;
 }

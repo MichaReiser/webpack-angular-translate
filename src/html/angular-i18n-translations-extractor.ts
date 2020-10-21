@@ -1,6 +1,6 @@
 import {
   AngularElement,
-  HtmlTranslationExtractionContext
+  HtmlTranslationExtractionContext,
 } from "./html-translation-extractor";
 import { Attribute } from "./element-context";
 
@@ -29,14 +29,14 @@ export default function angularI18nTranslationsExtractor(
   context: HtmlTranslationExtractionContext
 ): void {
   const i18nElementTranslation = element.attributes.find(
-    attribute => attribute.name === I18N_ATTRIBUTE_NAME
+    (attribute) => attribute.name === I18N_ATTRIBUTE_NAME
   );
 
   if (i18nElementTranslation) {
     handleTranslationsOfElements(element, context, i18nElementTranslation);
   }
 
-  const i18nAttributeTranslations = element.attributes.filter(attribute =>
+  const i18nAttributeTranslations = element.attributes.filter((attribute) =>
     I18N_ATTRIBUTE_REGEX.test(attribute.name)
   );
 
@@ -63,7 +63,7 @@ function handleTranslationsOfElements(
     context.registerTranslation({
       translationId: translationIdExtraction.translationId,
       defaultText: element.texts[0].text,
-      position: element.startPosition
+      position: element.startPosition,
     });
   } else if (element.texts.length > 1) {
     context.emitError(
@@ -72,6 +72,12 @@ function handleTranslationsOfElements(
     );
   }
 }
+
+angularI18nTranslationsExtractor.mayContainTranslations = function (
+  content: string
+): boolean {
+  return content.indexOf(I18N_ATTRIBUTE_NAME) !== -1;
+};
 
 function handleTranslationsOfAttributes(
   element: AngularElement,
@@ -101,7 +107,7 @@ function handleAttribute(
     `${I18N_ATTRIBUTE_NAME}-`.length
   );
   const attribute = element.attributes.find(
-    attribute => attribute.name === attributeName
+    (attribute) => attribute.name === attributeName
   );
 
   if (!attribute) {
@@ -129,7 +135,7 @@ function handleAttribute(
   context.registerTranslation({
     translationId: translationIdExtraction.translationId,
     defaultText: defaultText,
-    position: i18nAttribute.startPosition
+    position: i18nAttribute.startPosition,
   });
 }
 
@@ -143,19 +149,19 @@ function extractTranslationId(
       valid: false,
       error: `The attribute ${
         attribute.name
-      } on element ${context.asHtml()} attribute is missing the custom id indicator '${ID_INDICATOR}'.`
+      } on element ${context.asHtml()} attribute is missing the custom id indicator '${ID_INDICATOR}'.`,
     };
   } else if (index + ID_INDICATOR.length === attribute.value.length) {
     return {
       valid: false,
       error: `The attribute ${
         attribute.name
-      } on element ${context.asHtml()} defines an empty ID.`
+      } on element ${context.asHtml()} defines an empty ID.`,
     };
   } else {
     return {
       valid: true,
-      translationId: attribute.value.substr(index + ID_INDICATOR.length)
+      translationId: attribute.value.substr(index + ID_INDICATOR.length),
     };
   }
 }

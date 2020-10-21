@@ -1,6 +1,6 @@
 import {
   HtmlTranslationExtractionContext,
-  AngularElement
+  AngularElement,
 } from "./html-translation-extractor";
 import { AngularExpressionMatch } from "./ng-filters";
 import { Attribute } from "./element-context";
@@ -15,7 +15,7 @@ export default function translateDirectiveTranslationExtractor(
   let translateDirective: boolean;
   let translationId: string;
   const translateAttribute = element.attributes.find(
-    attribute => attribute.name === "translate"
+    (attribute) => attribute.name === "translate"
   );
 
   if (element.tagName === "translate") {
@@ -35,7 +35,7 @@ export default function translateDirectiveTranslationExtractor(
     const hasTranslateAttributes = handleTranslateAttributes(element, context);
 
     const defaultTextAttribute = element.attributes.find(
-      attr => attr.name === "translate-default"
+      (attr) => attr.name === "translate-default"
     );
 
     if (!translationId) {
@@ -57,7 +57,7 @@ export default function translateDirectiveTranslationExtractor(
         defaultText: defaultTextAttribute
           ? defaultTextAttribute.value
           : undefined,
-        position: element.startPosition
+        position: element.startPosition,
       });
     } else if (!hasTranslateAttributes) {
       // no translate-attr-* and the element has not specified a translation id, someone is using the directive incorrectly
@@ -71,22 +71,25 @@ export default function translateDirectiveTranslationExtractor(
   }
 }
 
+translateDirectiveTranslationExtractor.mayContainTranslations = function (
+  content: string
+): boolean {
+  return content.indexOf("translate") !== -1;
+};
+
 type KeyedAttributes = { [name: string]: Attribute };
 
 function handleTranslateAttributes(
   element: AngularElement,
   context: HtmlTranslationExtractionContext
 ) {
-  const keyedAttributes = element.attributes.reduce(
-    (obj, attribute) => {
-      obj[attribute.name] = attribute;
-      return obj;
-    },
-    {} as KeyedAttributes
-  );
+  const keyedAttributes = element.attributes.reduce((obj, attribute) => {
+    obj[attribute.name] = attribute;
+    return obj;
+  }, {} as KeyedAttributes);
 
   // translate-attr-ATTR
-  const translateAttributes = element.attributes.filter(attr =>
+  const translateAttributes = element.attributes.filter((attr) =>
     translateAttributeRegex.test(attr.name)
   );
 
@@ -100,7 +103,7 @@ function handleTranslateAttributes(
       defaultText: defaultTextAttribute
         ? defaultTextAttribute.value
         : undefined,
-      position: attribute.startPosition
+      position: attribute.startPosition,
     });
   }
 
@@ -139,7 +142,7 @@ function handleAngularExpression(
     translationId = translationId.substring(1, translationId.length - 1);
     context.registerTranslation({
       translationId,
-      position
+      position,
     });
   }
 }
