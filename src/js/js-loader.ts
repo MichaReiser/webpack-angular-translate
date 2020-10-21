@@ -62,7 +62,7 @@ async function extractTranslations(
   sourceMaps: any
 ) {
   const options: LoaderOptions = loaderUtils.getOptions(loader) || {};
-  const parserOptions = options.parserOptions || {};
+  const parserOptions = options.parserOptions || { ecmaVersion: "latest" };
 
   loader.pruneTranslations(path.relative(loader.context, loader.resourcePath));
 
@@ -78,7 +78,7 @@ async function extractTranslations(
       comment: true,
       sourceMap: generateSourceMaps ? loader.resourcePath : undefined,
       sourceMapWithCode: generateSourceMaps,
-      sourceContent: generateSourceMaps ? source : undefined
+      sourceContent: generateSourceMaps ? source : undefined,
     });
 
     if (generateSourceMaps) {
