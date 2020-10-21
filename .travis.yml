@@ -1,8 +1,9 @@
 language: node_js
 node_js:
   - stable
+  - 15
+  - 12
   - 10
-  - 8
 
 script:
   - npm test
