@@ -5,8 +5,9 @@ import * as loaderUtils from "loader-utils";
 import TranslateLoaderContext from "../translate-loader-context";
 import translateDirectiveTranslationExtractor from "./translate-directive-translation-extractor";
 import StatefulHtmlParser, {
-  SUPPRESS_ATTRIBUTE_NAME
+  SUPPRESS_ATTRIBUTE_NAME,
 } from "./translate-html-parser";
+import { HtmlTranslationExtractor } from "./html-translation-extractor";
 
 /**
  * Loader that must be used together with the plugin. The loader parses the html content and extracts all
@@ -60,12 +61,23 @@ function loader(source: string, sourceMaps: any): void | string {
   loader.pruneTranslations(path.relative(loader.context, loader.resourcePath));
 
   const options = loaderUtils.getOptions(loader) || {};
-  const translationExtractors = options.translationExtractors || [];
+  const translationExtractors: HtmlTranslationExtractor[] = [
+    ...(options.translationExtractors || []),
+    translateDirectiveTranslationExtractor,
+  ];
 
-  new StatefulHtmlParser(loader, [
-    ...translationExtractors,
-    translateDirectiveTranslationExtractor
-  ]).parse(source);
+  // Don't parse the HTML if none of the extractors detect any possible translations.
+  if (
+    translationExtractors.every(
+      (extractor) =>
+        extractor.mayContainTranslations != null &&
+        !extractor.mayContainTranslations(source)
+    )
+  ) {
+    return this.callback(null, source, sourceMaps);
+  }
+
+  new StatefulHtmlParser(loader, translationExtractors).parse(source);
 
   let result = source;
   if (!this.debug) {
